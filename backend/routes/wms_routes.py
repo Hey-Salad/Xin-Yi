@@ -466,3 +466,201 @@ def stock_out():
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+
+@wms_bp.route('/materials/product-stats', methods=['GET'])
+def get_product_stats():
+    """获取单个产品的统计数据 | Get product statistics"""
+    try:
+        product_name = request.args.get('name', '')
+        if not product_name:
+            return jsonify({'error': 'Missing product name'}), 400
+        
+        # Get product info
+        response = supabase.table('materials')\
+            .select('*')\
+            .eq('name', product_name)\
+            .single()\
+            .execute()
+        
+        if not response.data:
+            return jsonify({'error': 'Product not found'}), 404
+        
+        product = response.data
+        
+        # Get today's date
+        from datetime import datetime, timedelta
+        today = datetime.now().date().isoformat()
+        yesterday = (datetime.now() - timedelta(days=1)).date().isoformat()
+        
+        # Today's stock-in
+        today_in_response = supabase.table('inventory_records')\
+            .select('quantity')\
+            .eq('material_id', product['id'])\
+            .eq('type', 'in')\
+            .gte('created_at', f'{today}T00:00:00')\
+            .lt('created_at', f'{today}T23:59:59')\
+            .execute()
+        today_in = sum(item['quantity'] for item in today_in_response.data)
+        
+        # Yesterday's stock-in
+        yesterday_in_response = supabase.table('inventory_records')\
+            .select('quantity')\
+            .eq('material_id', product['id'])\
+            .eq('type', 'in')\
+            .gte('created_at', f'{yesterday}T00:00:00')\
+            .lt('created_at', f'{yesterday}T23:59:59')\
+            .execute()
+        yesterday_in = sum(item['quantity'] for item in yesterday_in_response.data) or 1
+        
+        # Today's stock-out
+        today_out_response = supabase.table('inventory_records')\
+            .select('quantity')\
+            .eq('material_id', product['id'])\
+            .eq('type', 'out')\
+            .gte('created_at', f'{today}T00:00:00')\
+            .lt('created_at', f'{today}T23:59:59')\
+            .execute()
+        today_out = sum(item['quantity'] for item in today_out_response.data)
+        
+        # Yesterday's stock-out
+        yesterday_out_response = supabase.table('inventory_records')\
+            .select('quantity')\
+            .eq('material_id', product['id'])\
+            .eq('type', 'out')\
+            .gte('created_at', f'{yesterday}T00:00:00')\
+            .lt('created_at', f'{yesterday}T23:59:59')\
+            .execute()
+        yesterday_out = sum(item['quantity'] for item in yesterday_out_response.data) or 1
+        
+        # Total in/out
+        total_in_response = supabase.table('inventory_records')\
+            .select('quantity')\
+            .eq('material_id', product['id'])\
+            .eq('type', 'in')\
+            .execute()
+        total_in = sum(item['quantity'] for item in total_in_response.data)
+        
+        total_out_response = supabase.table('inventory_records')\
+            .select('quantity')\
+            .eq('material_id', product['id'])\
+            .eq('type', 'out')\
+            .execute()
+        total_out = sum(item['quantity'] for item in total_out_response.data)
+        
+        # Calculate percentage change
+        in_change = round(((today_in - yesterday_in) / yesterday_in * 100), 1) if yesterday_in > 0 else 0
+        out_change = round(((today_out - yesterday_out) / yesterday_out * 100), 1) if yesterday_out > 0 else 0
+        
+        return jsonify({
+            'name': product_name,
+            'sku': product['sku'],
+            'current_stock': product['quantity'],
+            'unit': product['unit'],
+            'safe_stock': product['safe_stock'],
+            'location': product['location'],
+            'today_in': today_in,
+            'today_out': today_out,
+            'in_change': in_change,
+            'out_change': out_change,
+            'total_in': total_in,
+            'total_out': total_out
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@wms_bp.route('/materials/product-trend', methods=['GET'])
+def get_product_trend():
+    """获取产品7天趋势 | Get product 7-day trend"""
+    try:
+        product_name = request.args.get('name', '')
+        if not product_name:
+            return jsonify({'error': 'Missing product name'}), 400
+        
+        # Get product ID
+        response = supabase.table('materials')\
+            .select('id')\
+            .eq('name', product_name)\
+            .single()\
+            .execute()
+        
+        if not response.data:
+            return jsonify({'error': 'Product not found'}), 404
+        
+        material_id = response.data['id']
+        
+        # Get last 7 days data
+        from datetime import datetime, timedelta
+        dates = []
+        in_data = []
+        out_data = []
+        
+        for i in range(6, -1, -1):
+            date = (datetime.now() - timedelta(days=i)).date().isoformat()
+            dates.append(date[-5:])  # MM-DD format
+            
+            # Stock-in for this date
+            in_response = supabase.table('inventory_records')\
+                .select('quantity')\
+                .eq('material_id', material_id)\
+                .eq('type', 'in')\
+                .gte('created_at', f'{date}T00:00:00')\
+                .lt('created_at', f'{date}T23:59:59')\
+                .execute()
+            in_data.append(sum(item['quantity'] for item in in_response.data))
+            
+            # Stock-out for this date
+            out_response = supabase.table('inventory_records')\
+                .select('quantity')\
+                .eq('material_id', material_id)\
+                .eq('type', 'out')\
+                .gte('created_at', f'{date}T00:00:00')\
+                .lt('created_at', f'{date}T23:59:59')\
+                .execute()
+            out_data.append(sum(item['quantity'] for item in out_response.data))
+        
+        return jsonify({
+            'dates': dates,
+            'in_data': in_data,
+            'out_data': out_data
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@wms_bp.route('/materials/product-records', methods=['GET'])
+def get_product_records():
+    """获取产品出入库记录 | Get product transaction records"""
+    try:
+        product_name = request.args.get('name', '')
+        if not product_name:
+            return jsonify({'error': 'Missing product name'}), 400
+        
+        # Get product ID
+        response = supabase.table('materials')\
+            .select('id')\
+            .eq('name', product_name)\
+            .single()\
+            .execute()
+        
+        if not response.data:
+            return jsonify({'error': 'Product not found'}), 404
+        
+        material_id = response.data['id']
+        
+        # Get last 30 records
+        records_response = supabase.table('inventory_records')\
+            .select('type, quantity, operator, reason, created_at')\
+            .eq('material_id', material_id)\
+            .order('created_at', desc=True)\
+            .limit(30)\
+            .execute()
+        
+        return jsonify(records_response.data)
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
