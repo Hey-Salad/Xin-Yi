@@ -1,9 +1,34 @@
 // API Base URL | API 基础 URL
 // Production: https://wms.heysalad.app/api/wms
 // Local dev: http://localhost:2124/api/wms
-const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    ? 'http://localhost:2124/api/wms'
-    : 'https://wms.heysalad.app/api/wms';
+
+// Always use cloud backend for now since local backend isn't running
+const API_BASE_URL = 'https://wms.heysalad.app/api/wms';
+
+console.log('🔗 API Backend:', API_BASE_URL);
+
+// Fetch with timeout helper
+async function fetchWithTimeout(url, timeout = 10000) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+    
+    try {
+        const response = await fetch(url, { signal: controller.signal });
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        return response;
+    } catch (error) {
+        clearTimeout(timeoutId);
+        if (error.name === 'AbortError') {
+            throw new Error(`Request timeout after ${timeout}ms`);
+        }
+        throw error;
+    }
+}
 
 // 初始化图表 | Initialize charts
 let trendChart, categoryChart, topStockChart;
@@ -38,17 +63,30 @@ function initCharts() {
 
 // 加载所有数据 | Load all data
 async function loadAllData() {
-    try {
-        await Promise.all([
-            loadDashboardStats(),
-            loadCategoryDistribution(),
-            loadWeeklyTrend(),
-            loadTopStock(),
-            loadAllMaterials()
-        ]);
-    } catch (error) {
-        console.error('Failed to load data | 加载数据失败:', error);
-        alert('Failed to load data. Please check if backend service is running.\n加载数据失败，请检查后端服务是否启动。');
+    console.log('🔄 Loading data from:', API_BASE_URL);
+    const startTime = Date.now();
+    
+    // Use Promise.allSettled instead of Promise.all to handle partial failures
+    const results = await Promise.allSettled([
+        loadDashboardStats(),
+        loadCategoryDistribution(),
+        loadWeeklyTrend(),
+        loadTopStock(),
+        loadAllMaterials()
+    ]);
+    
+    const loadTime = Date.now() - startTime;
+    console.log(`✅ Data loaded in ${loadTime}ms`);
+    
+    // Check if any failed
+    const failures = results.filter(r => r.status === 'rejected');
+    if (failures.length > 0) {
+        console.warn(`⚠️ ${failures.length} API calls failed:`, failures.map(f => f.reason));
+        
+        // Only show alert if ALL failed
+        if (failures.length === results.length) {
+            alert('Failed to load data. Please check if backend service is running.\n加载数据失败，请检查后端服务是否启动。');
+        }
     }
 }
 
@@ -108,22 +146,27 @@ function resetCountdown() {
 
 // 加载统计数据 | Load dashboard statistics
 async function loadDashboardStats() {
-    const response = await fetch(`${API_BASE_URL}/dashboard/stats`);
-    const data = await response.json();
+    try {
+        const response = await fetchWithTimeout(`${API_BASE_URL}/dashboard/stats`, 10000);
+        const data = await response.json();
 
-    document.getElementById('total-stock').textContent = data.total_stock.toLocaleString();
-    document.getElementById('today-in').textContent = data.today_in.toLocaleString();
-    document.getElementById('today-out').textContent = data.today_out.toLocaleString();
-    document.getElementById('low-stock-count').textContent = data.low_stock_count;
+        document.getElementById('total-stock').textContent = data.total_stock.toLocaleString();
+        document.getElementById('today-in').textContent = data.today_in.toLocaleString();
+        document.getElementById('today-out').textContent = data.today_out.toLocaleString();
+        document.getElementById('low-stock-count').textContent = data.low_stock_count;
 
-    // 更新变化百分比 | Update percentage change
-    const inChange = document.getElementById('in-change');
-    inChange.textContent = (data.in_change >= 0 ? '+' : '') + data.in_change + '%';
-    inChange.className = data.in_change >= 0 ? 'stat-change positive' : 'stat-change negative';
+        // 更新变化百分比 | Update percentage change
+        const inChange = document.getElementById('in-change');
+        inChange.textContent = (data.in_change >= 0 ? '+' : '') + data.in_change + '%';
+        inChange.className = data.in_change >= 0 ? 'stat-change positive' : 'stat-change negative';
 
-    const outChange = document.getElementById('out-change');
-    outChange.textContent = (data.out_change >= 0 ? '+' : '') + data.out_change + '%';
-    outChange.className = data.out_change >= 0 ? 'stat-change positive' : 'stat-change negative';
+        const outChange = document.getElementById('out-change');
+        outChange.textContent = (data.out_change >= 0 ? '+' : '') + data.out_change + '%';
+        outChange.className = data.out_change >= 0 ? 'stat-change positive' : 'stat-change negative';
+    } catch (error) {
+        console.error('Failed to load dashboard stats:', error);
+        throw error;
+    }
 }
 
 // 加载类型分布 | Load category distribution
