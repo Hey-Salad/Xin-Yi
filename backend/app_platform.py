@@ -26,9 +26,10 @@ CORS(app, origins=[
     "https://xinyi.heysalad.app",
     "https://heysalad.app",
     "https://*.heysalad.app",
+    "https://vscode.heysalad.app",
     "http://localhost:*",
     "http://127.0.0.1:*"
-])
+], supports_credentials=True)
 
 # Import and register blueprints
 from routes.wms_routes import wms_bp
