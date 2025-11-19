@@ -1,15 +1,20 @@
-const API_BASE_URL = 'http://localhost:2124/api';
+// API Base URL | API 基础 URL
+// For production: https://api.heysalad.app/api
+// For local dev: http://localhost:2124/api
+const API_BASE_URL = window.location.hostname === 'localhost' 
+    ? 'http://localhost:2124/api'
+    : 'https://api.heysalad.app/api';
 
-// 初始化图表
+// 初始化图表 | Initialize charts
 let trendChart, categoryChart, topStockChart;
 
-// 全局变量
-let allMaterials = []; // 存储所有物料数据
-let updateInterval = null; // 自动更新定时器
-let countdownInterval = null; // 倒计时定时器
-let countdownSeconds = 3; // 倒计时秒数
+// 全局变量 | Global variables
+let allMaterials = []; // 存储所有物料数据 | Store all materials data
+let updateInterval = null; // 自动更新定时器 | Auto-update timer
+let countdownInterval = null; // 倒计时定时器 | Countdown timer
+let countdownSeconds = 3; // 倒计时秒数 | Countdown seconds
 
-// 页面加载完成后初始化
+// 页面加载完成后初始化 | Initialize after page load
 document.addEventListener('DOMContentLoaded', function() {
     initCharts();
     loadAllData();
@@ -17,13 +22,13 @@ document.addEventListener('DOMContentLoaded', function() {
     startAutoUpdate();
 });
 
-// 初始化图表
+// 初始化图表 | Initialize charts
 function initCharts() {
     trendChart = echarts.init(document.getElementById('trend-chart'));
     categoryChart = echarts.init(document.getElementById('category-chart'));
     topStockChart = echarts.init(document.getElementById('top-stock-chart'));
 
-    // 响应式
+    // 响应式 | Responsive
     window.addEventListener('resize', function() {
         trendChart.resize();
         categoryChart.resize();
@@ -31,7 +36,7 @@ function initCharts() {
     });
 }
 
-// 加载所有数据
+// 加载所有数据 | Load all data
 async function loadAllData() {
     try {
         await Promise.all([
@@ -42,18 +47,18 @@ async function loadAllData() {
             loadAllMaterials()
         ]);
     } catch (error) {
-        console.error('加载数据失败:', error);
-        alert('加载数据失败，请检查后端服务是否启动');
+        console.error('加载数据失败:', error);  // Failed to load data
+        alert('加载数据失败，请检查后端服务是否启动');  // Failed to load data, please check if backend service is running
     }
 }
 
-// 刷新数据
+// 刷新数据 | Refresh data
 function refreshData() {
     loadAllData();
     resetCountdown();
 }
 
-// 初始化搜索过滤
+// 初始化搜索过滤 | Initialize search filter
 function initSearchFilter() {
     const searchInput = document.getElementById('search-input');
     searchInput.addEventListener('input', function(e) {
@@ -62,7 +67,7 @@ function initSearchFilter() {
     });
 }
 
-// 过滤物料
+// 过滤物料 | Filter materials
 function filterMaterials(keyword) {
     if (!keyword) {
         renderInventoryTable(allMaterials);
@@ -76,32 +81,32 @@ function filterMaterials(keyword) {
     renderInventoryTable(filtered);
 }
 
-// 启动自动更新
+// 启动自动更新 | Start auto-update
 function startAutoUpdate() {
-    // 清除旧的定时器
+    // 清除旧的定时器 | Clear old timers
     if (updateInterval) clearInterval(updateInterval);
     if (countdownInterval) clearInterval(countdownInterval);
 
-    // 倒计时
+    // 倒计时 | Countdown
     countdownInterval = setInterval(function() {
         countdownSeconds--;
         document.getElementById('countdown').textContent = countdownSeconds;
 
         if (countdownSeconds <= 0) {
-            // 更新所有数据
+            // 更新所有数据 | Update all data
             loadAllData();
             countdownSeconds = 3;
         }
     }, 1000);
 }
 
-// 重置倒计时
+// 重置倒计时 | Reset countdown
 function resetCountdown() {
     countdownSeconds = 3;
     document.getElementById('countdown').textContent = countdownSeconds;
 }
 
-// 加载统计数据
+// 加载统计数据 | Load dashboard statistics
 async function loadDashboardStats() {
     const response = await fetch(`${API_BASE_URL}/dashboard/stats`);
     const data = await response.json();
@@ -111,7 +116,7 @@ async function loadDashboardStats() {
     document.getElementById('today-out').textContent = data.today_out.toLocaleString();
     document.getElementById('low-stock-count').textContent = data.low_stock_count;
 
-    // 更新变化百分比
+    // 更新变化百分比 | Update percentage change
     const inChange = document.getElementById('in-change');
     inChange.textContent = (data.in_change >= 0 ? '+' : '') + data.in_change + '%';
     inChange.className = data.in_change >= 0 ? 'stat-change positive' : 'stat-change negative';
@@ -121,7 +126,7 @@ async function loadDashboardStats() {
     outChange.className = data.out_change >= 0 ? 'stat-change positive' : 'stat-change negative';
 }
 
-// 加载类型分布
+// 加载类型分布 | Load category distribution
 async function loadCategoryDistribution() {
     const response = await fetch(`${API_BASE_URL}/dashboard/category-distribution`);
     const data = await response.json();
@@ -172,7 +177,7 @@ async function loadCategoryDistribution() {
     categoryChart.setOption(option);
 }
 
-// 加载近7天趋势
+// 加载近7天趋势 | Load 7-day trend
 async function loadWeeklyTrend() {
     const response = await fetch(`${API_BASE_URL}/dashboard/weekly-trend`);
     const data = await response.json();
@@ -288,7 +293,7 @@ async function loadWeeklyTrend() {
     trendChart.setOption(option);
 }
 
-// 加载库存TOP10
+// 加载库存TOP10 | Load top 10 stock
 async function loadTopStock() {
     const response = await fetch(`${API_BASE_URL}/dashboard/top-stock`);
     const data = await response.json();
@@ -371,14 +376,14 @@ async function loadTopStock() {
     topStockChart.setOption(option);
 }
 
-// 加载所有物料
+// 加载所有物料 | Load all materials
 async function loadAllMaterials() {
     const response = await fetch(`${API_BASE_URL}/materials/all`);
     const data = await response.json();
 
     allMaterials = data;
 
-    // 应用当前搜索条件
+    // 应用当前搜索条件 | Apply current search criteria
     const searchInput = document.getElementById('search-input');
     const keyword = searchInput ? searchInput.value.toLowerCase().trim() : '';
 
@@ -389,13 +394,13 @@ async function loadAllMaterials() {
     }
 }
 
-// 渲染库存表格
+// 渲染库存表格 | Render inventory table
 function renderInventoryTable(data) {
     const tbody = document.getElementById('inventory-tbody');
     tbody.innerHTML = '';
 
     if (data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #999;">暂无数据</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #999;">暂无数据</td></tr>';  // No data
         return;
     }
 
@@ -423,7 +428,7 @@ function renderInventoryTable(data) {
             <td>${item.location}</td>
         `;
 
-        // 添加点击事件，跳转到产品详情页
+        // 添加点击事件，跳转到产品详情页 | Add click event to navigate to product detail page
         tr.addEventListener('click', function() {
             window.location.href = `product_detail.html?product=${encodeURIComponent(item.name)}`;
         });

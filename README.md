@@ -1,6 +1,10 @@
-# 仓库管理系统
+# 仓库管理系统 / Warehouse Management System
 
 一个基于 Python Flask + SQLite 的智能硬件仓库管理系统仪表盘。
+
+> **English documentation available:** See [README_EN.md](README_EN.md) for English version.
+
+---
 
 ## 功能特性
 
@@ -9,6 +13,7 @@
 - 🥧 **分类分布**：库存类型占比饼图
 - 📋 **TOP10展示**：库存最多的物料排行
 - ⚠️ **预警列表**：低于安全库存的物料提醒
+- 🔧 **MCP集成**：支持AI助手通过模型上下文协议集成
 
 ## 技术栈
 
@@ -17,6 +22,7 @@
 - Flask (Web框架)
 - SQLite (数据库)
 - uv (包管理工具)
+- FastMCP (MCP服务器)
 
 ### 前端
 - 原生 HTML/CSS/JavaScript
@@ -65,18 +71,25 @@ warehouse_system/
 │   ├── index.html       # 主页面
 │   ├── style.css        # 样式文件
 │   ├── app.js           # JavaScript 逻辑
+│   ├── product_detail.html  # 产品详情页
+│   ├── product_detail.js    # 产品详情逻辑
 │   └── server.py        # 静态文件服务器
 ├── mcp/                 # MCP 服务
 │   ├── warehouse_mcp.py # MCP 服务器
 │   ├── mcp_config.json  # MCP 配置
-│   └── mcp_pipe.py      # MCP 管道
+│   ├── mcp_pipe.py      # MCP 管道
+│   └── MCP_README.md    # MCP 文档
 ├── test/                # 测试文件
 │   ├── test_mcp.py      # MCP 测试
 │   ├── test_api.py      # API 测试
+│   ├── test_mcp_statistics.py  # MCP 统计测试
 │   ├── run_all_tests.sh # 测试脚本
 │   └── README.md        # 测试文档
 ├── start.sh             # 启动脚本
-└── README.md            # 项目说明
+├── run_backend.py       # 后端启动器
+├── pyproject.toml       # 项目依赖
+├── README.md            # 项目说明（中文）
+└── README_EN.md         # 项目说明（英文）
 ```
 
 ## 数据说明
@@ -124,10 +137,81 @@ GET /api/dashboard/top-stock
 GET /api/dashboard/low-stock-alert
 ```
 
+### 获取所有物料
+```
+GET /api/materials/all
+```
+
 ### 获取watcher-xiaozhi相关库存
 ```
 GET /api/materials/xiaozhi
 ```
+
+### 获取产品统计数据
+```
+GET /api/materials/product-stats?name=<产品名称>
+```
+
+### 获取产品趋势
+```
+GET /api/materials/product-trend?name=<产品名称>
+```
+
+### 获取产品出入库记录
+```
+GET /api/materials/product-records?name=<产品名称>
+```
+
+## MCP 集成
+
+本系统提供 MCP（模型上下文协议）工具，可与 Claude Desktop 等 AI 助手集成。
+
+### 可用的 MCP 工具
+
+1. **query_xiaozhi_stock** - 查询产品库存
+2. **stock_in** - 入库操作
+3. **stock_out** - 出库操作
+4. **list_xiaozhi_products** - 列出所有产品
+5. **get_today_statistics** - 获取今日统计数据
+
+### 配置 Claude Desktop
+
+编辑 Claude Desktop 配置文件：
+
+**macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
+
+**Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
+
+```json
+{
+  "mcpServers": {
+    "warehouse-system": {
+      "type": "stdio",
+      "command": "uv",
+      "args": ["run", "python", "warehouse_mcp.py"],
+      "cwd": "/path/to/your/warehouse_system/mcp"
+    }
+  }
+}
+```
+
+**重要：** 将 `cwd` 替换为你的实际项目路径！
+
+### 使用示例
+
+```
+查询 watcher-xiaozhi(标准版) 的库存
+```
+
+```
+watcher-xiaozhi(标准版) 采购到货 10 台，请帮忙入库
+```
+
+```
+销售了 5 台 watcher-xiaozhi(标准版)，请出库
+```
+
+详见 `mcp/MCP_README.md` 和 `CLAUDE_DESKTOP_CONFIG.md` 获取完整的 MCP 文档。
 
 ## 停止服务
 
@@ -149,9 +233,12 @@ python3 test/test_mcp.py
 
 # API 接口测试
 python3 test/test_api.py
+
+# MCP 统计测试
+python3 test/test_mcp_statistics.py
 ```
 
-详见 `test/README.md`
+详见 `test/README.md` 获取详细测试文档。
 
 ## 注意事项
 
@@ -174,6 +261,47 @@ uv run python database.py
 uv add <package_name>
 ```
 
+### 安装 uv
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+## 功能亮点
+
+### 实时更新
+- 前端每3秒自动刷新
+- 库存列表自动更新
+- 无需手动刷新
+
+### 产品详情视图
+- 点击库存列表中的任意产品
+- 查看详细的出入库统计
+- 7天趋势图表
+- 最近交易记录
+
+### 库存预警
+- 可视化状态标签（正常/偏低/告急）
+- 颜色编码警告
+- 安全库存阈值监控
+
+### 搜索与过滤
+- 实时产品名称搜索
+- 即时过滤结果
+- 不区分大小写匹配
+
 ## 许可证
 
 MIT License
+
+## 文档
+
+- `README.md` - 项目说明（中文）
+- `README_EN.md` - 项目说明（英文）
+- `mcp/MCP_README.md` - MCP 集成指南
+- `CLAUDE_DESKTOP_CONFIG.md` - Claude Desktop 配置指南
+- `test/README.md` - 测试文档
+- `仓管 prompt 记录.md` - 开发提示词记录
+
+## 支持
+
+如有问题或疑问，请参考文档文件或查看测试脚本示例。

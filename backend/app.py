@@ -7,21 +7,21 @@ from database import init_database, generate_mock_data, get_db_connection
 app = Flask(__name__)
 CORS(app)
 
-# 初始化数据库
+# 初始化数据库 | Initialize database
 init_database()
 generate_mock_data()
 
 @app.route('/api/dashboard/stats', methods=['GET'])
 def get_dashboard_stats():
-    """获取仪表盘统计数据"""
+    """获取仪表盘统计数据 | Get dashboard statistics"""
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # 库存总量
+    # 库存总量 | Total stock quantity
     cursor.execute('SELECT SUM(quantity) as total FROM materials')
     total_stock = cursor.fetchone()['total'] or 0
 
-    # 今日入库量
+    # 今日入库量 | Today's stock-in quantity
     today_start = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
     cursor.execute('''
         SELECT SUM(quantity) as total
@@ -30,7 +30,7 @@ def get_dashboard_stats():
     ''', (today_start.strftime('%Y-%m-%d %H:%M:%S'),))
     today_in = cursor.fetchone()['total'] or 0
 
-    # 今日出库量
+    # 今日出库量 | Today's stock-out quantity
     cursor.execute('''
         SELECT SUM(quantity) as total
         FROM inventory_records
@@ -38,7 +38,7 @@ def get_dashboard_stats():
     ''', (today_start.strftime('%Y-%m-%d %H:%M:%S'),))
     today_out = cursor.fetchone()['total'] or 0
 
-    # 库存预警（低于安全库存）
+    # 库存预警（低于安全库存）| Low stock alert (below safety stock)
     cursor.execute('''
         SELECT COUNT(*) as count
         FROM materials
@@ -46,11 +46,11 @@ def get_dashboard_stats():
     ''')
     low_stock_count = cursor.fetchone()['count']
 
-    # 物料种类数
+    # 物料种类数 | Number of material types
     cursor.execute('SELECT COUNT(*) as count FROM materials')
     material_types = cursor.fetchone()['count']
 
-    # 计算昨日数据用于百分比变化
+    # 计算昨日数据用于百分比变化 | Calculate yesterday's data for percentage change
     yesterday_start = (datetime.now() - timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
     yesterday_end = today_start
 
@@ -68,7 +68,7 @@ def get_dashboard_stats():
     ''', (yesterday_start.strftime('%Y-%m-%d %H:%M:%S'), yesterday_end.strftime('%Y-%m-%d %H:%M:%S')))
     yesterday_out = cursor.fetchone()['total'] or 1
 
-    # 计算百分比变化
+    # 计算百分比变化 | Calculate percentage change
     in_change = round(((today_in - yesterday_in) / yesterday_in * 100), 1) if yesterday_in > 0 else 0
     out_change = round(((today_out - yesterday_out) / yesterday_out * 100), 1) if yesterday_out > 0 else 0
 
@@ -86,7 +86,7 @@ def get_dashboard_stats():
 
 @app.route('/api/dashboard/category-distribution', methods=['GET'])
 def get_category_distribution():
-    """获取库存类型分布"""
+    """获取库存类型分布 | Get inventory category distribution"""
     conn = get_db_connection()
     cursor = conn.cursor()
 
@@ -109,7 +109,7 @@ def get_category_distribution():
 
 @app.route('/api/dashboard/weekly-trend', methods=['GET'])
 def get_weekly_trend():
-    """获取近7天出入库趋势"""
+    """获取近7天出入库趋势 | Get 7-day stock in/out trend"""
     conn = get_db_connection()
     cursor = conn.cursor()
 
@@ -124,7 +124,7 @@ def get_weekly_trend():
 
         dates.append(date.strftime('%m-%d'))
 
-        # 入库数据
+        # 入库数据 | Stock-in data
         cursor.execute('''
             SELECT SUM(quantity) as total
             FROM inventory_records
@@ -133,7 +133,7 @@ def get_weekly_trend():
         in_total = cursor.fetchone()['total'] or 0
         in_data.append(in_total)
 
-        # 出库数据
+        # 出库数据 | Stock-out data
         cursor.execute('''
             SELECT SUM(quantity) as total
             FROM inventory_records
@@ -152,7 +152,7 @@ def get_weekly_trend():
 
 @app.route('/api/dashboard/top-stock', methods=['GET'])
 def get_top_stock():
-    """获取库存TOP10"""
+    """获取库存TOP10 | Get top 10 stock items"""
     conn = get_db_connection()
     cursor = conn.cursor()
 
@@ -182,7 +182,7 @@ def get_top_stock():
 
 @app.route('/api/dashboard/low-stock-alert', methods=['GET'])
 def get_low_stock_alert():
-    """获取库存预警列表"""
+    """获取库存预警列表 | Get low stock alert list"""
     conn = get_db_connection()
     cursor = conn.cursor()
 
@@ -211,7 +211,7 @@ def get_low_stock_alert():
 
 @app.route('/api/materials/xiaozhi', methods=['GET'])
 def get_xiaozhi_stock():
-    """获取 watcher-xiaozhi 相关库存"""
+    """获取 watcher-xiaozhi 相关库存 | Get watcher-xiaozhi related inventory"""
     conn = get_db_connection()
     cursor = conn.cursor()
 
@@ -238,7 +238,7 @@ def get_xiaozhi_stock():
 
 @app.route('/api/materials/all', methods=['GET'])
 def get_all_materials():
-    """获取所有库存"""
+    """获取所有库存 | Get all inventory"""
     conn = get_db_connection()
     cursor = conn.cursor()
 
@@ -253,16 +253,16 @@ def get_all_materials():
         quantity = row['quantity']
         safe_stock = row['safe_stock']
 
-        # 判断状态
+        # 判断状态 | Determine status
         if quantity >= safe_stock:
             status = 'normal'
-            status_text = '正常'
+            status_text = '正常'  # Normal
         elif quantity >= safe_stock * 0.5:
             status = 'warning'
-            status_text = '偏低'
+            status_text = '偏低'  # Low
         else:
             status = 'danger'
-            status_text = '告急'
+            status_text = '告急'  # Critical
 
         data.append({
             'name': row['name'],
@@ -282,16 +282,16 @@ def get_all_materials():
 
 @app.route('/api/materials/product-stats', methods=['GET'])
 def get_product_stats():
-    """获取单个产品的统计数据"""
+    """获取单个产品的统计数据 | Get statistics for a single product"""
     product_name = request.args.get('name', '')
 
     if not product_name:
-        return jsonify({'error': '缺少产品名称参数'}), 400
+        return jsonify({'error': '缺少产品名称参数'}), 400  # Missing product name parameter
 
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # 查询产品基本信息
+    # 查询产品基本信息 | Query product basic information
     cursor.execute('''
         SELECT id, name, sku, quantity, unit, safe_stock, location
         FROM materials
@@ -301,19 +301,19 @@ def get_product_stats():
     product = cursor.fetchone()
     if not product:
         conn.close()
-        return jsonify({'error': '产品不存在'}), 404
+        return jsonify({'error': '产品不存在'}), 404  # Product does not exist
 
     material_id = product['id']
     current_stock = product['quantity']
     unit = product['unit']
     safe_stock = product['safe_stock']
 
-    # 获取今天的日期
+    # 获取今天的日期 | Get today's date
     from datetime import datetime, timedelta
     today = datetime.now().strftime('%Y-%m-%d')
     yesterday = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
 
-    # 查询今日入库
+    # 查询今日入库 | Query today's stock-in
     cursor.execute('''
         SELECT COALESCE(SUM(quantity), 0) as total
         FROM inventory_records
@@ -321,7 +321,7 @@ def get_product_stats():
     ''', (material_id, today))
     today_in = cursor.fetchone()['total']
 
-    # 查询昨日入库
+    # 查询昨日入库 | Query yesterday's stock-in
     cursor.execute('''
         SELECT COALESCE(SUM(quantity), 0) as total
         FROM inventory_records
@@ -329,7 +329,7 @@ def get_product_stats():
     ''', (material_id, yesterday))
     yesterday_in = cursor.fetchone()['total']
 
-    # 查询今日出库
+    # 查询今日出库 | Query today's stock-out
     cursor.execute('''
         SELECT COALESCE(SUM(quantity), 0) as total
         FROM inventory_records
@@ -337,7 +337,7 @@ def get_product_stats():
     ''', (material_id, today))
     today_out = cursor.fetchone()['total']
 
-    # 查询昨日出库
+    # 查询昨日出库 | Query yesterday's stock-out
     cursor.execute('''
         SELECT COALESCE(SUM(quantity), 0) as total
         FROM inventory_records
@@ -345,7 +345,7 @@ def get_product_stats():
     ''', (material_id, yesterday))
     yesterday_out = cursor.fetchone()['total']
 
-    # 查询总入库和总出库（用于饼图）
+    # 查询总入库和总出库（用于饼图）| Query total stock-in and stock-out (for pie chart)
     cursor.execute('''
         SELECT COALESCE(SUM(quantity), 0) as total
         FROM inventory_records
@@ -362,7 +362,7 @@ def get_product_stats():
 
     conn.close()
 
-    # 计算变化百分比
+    # 计算变化百分比 | Calculate percentage change
     in_change = ((today_in - yesterday_in) / yesterday_in * 100) if yesterday_in > 0 else 0
     out_change = ((today_out - yesterday_out) / yesterday_out * 100) if yesterday_out > 0 else 0
 
@@ -384,39 +384,39 @@ def get_product_stats():
 
 @app.route('/api/materials/product-trend', methods=['GET'])
 def get_product_trend():
-    """获取单个产品的近7天趋势"""
+    """获取单个产品的近7天趋势 | Get 7-day trend for a single product"""
     product_name = request.args.get('name', '')
 
     if not product_name:
-        return jsonify({'error': '缺少产品名称参数'}), 400
+        return jsonify({'error': '缺少产品名称参数'}), 400  # Missing product name parameter
 
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # 查询产品ID
+    # 查询产品ID | Query product ID
     cursor.execute('SELECT id FROM materials WHERE name = ?', (product_name,))
     product = cursor.fetchone()
     if not product:
         conn.close()
-        return jsonify({'error': '产品不存在'}), 404
+        return jsonify({'error': '产品不存在'}), 404  # Product does not exist
 
     material_id = product['id']
 
-    # 获取近7天的日期
+    # 获取近7天的日期 | Get dates for the last 7 days
     from datetime import datetime, timedelta
     dates = []
     for i in range(6, -1, -1):
         date = (datetime.now() - timedelta(days=i)).strftime('%m-%d')
         dates.append(date)
 
-    # 查询每天的入库和出库数据
+    # 查询每天的入库和出库数据 | Query daily stock-in and stock-out data
     in_data = []
     out_data = []
 
     for i in range(6, -1, -1):
         date = (datetime.now() - timedelta(days=i)).strftime('%Y-%m-%d')
 
-        # 查询当天入库
+        # 查询当天入库 | Query that day's stock-in
         cursor.execute('''
             SELECT COALESCE(SUM(quantity), 0) as total
             FROM inventory_records
@@ -424,7 +424,7 @@ def get_product_trend():
         ''', (material_id, date))
         in_data.append(cursor.fetchone()['total'])
 
-        # 查询当天出库
+        # 查询当天出库 | Query that day's stock-out
         cursor.execute('''
             SELECT COALESCE(SUM(quantity), 0) as total
             FROM inventory_records
@@ -443,25 +443,25 @@ def get_product_trend():
 
 @app.route('/api/materials/product-records', methods=['GET'])
 def get_product_records():
-    """获取单个产品的出入库记录"""
+    """获取单个产品的出入库记录 | Get stock in/out records for a single product"""
     product_name = request.args.get('name', '')
 
     if not product_name:
-        return jsonify({'error': '缺少产品名称参数'}), 400
+        return jsonify({'error': '缺少产品名称参数'}), 400  # Missing product name parameter
 
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # 查询产品ID
+    # 查询产品ID | Query product ID
     cursor.execute('SELECT id FROM materials WHERE name = ?', (product_name,))
     product = cursor.fetchone()
     if not product:
         conn.close()
-        return jsonify({'error': '产品不存在'}), 404
+        return jsonify({'error': '产品不存在'}), 404  # Product does not exist
 
     material_id = product['id']
 
-    # 查询最近30条记录
+    # 查询最近30条记录 | Query the last 30 records
     cursor.execute('''
         SELECT type, quantity, operator, reason, created_at
         FROM inventory_records
