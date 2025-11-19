@@ -1,13 +1,9 @@
 // API Base URL | API 基础 URL
-// For production: https://api.heysalad.app/api
-// For local dev: http://localhost:2124/api
-const API_BASE_URL = window.location.hostname === 'localhost' 
-    ? 'http://localhost:2124/api'
-    : 'https://api.heysalad.app/api';
-
-const WMS_API_BASE = window.location.hostname === 'localhost'
+const WMS_API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     ? 'http://localhost:2124/api/wms'
     : 'https://wms.heysalad.app/api/wms';
+
+console.log('🔗 Product Detail API:', WMS_API_BASE);
 
 // 初始化图表 | Initialize charts
 let trendChart, pieChart;
@@ -65,7 +61,7 @@ async function loadProductData() {
 
 // 加载产品统计数据 | Load product statistics
 async function loadProductStats() {
-    const response = await fetch(`${API_BASE_URL}/materials/product-stats?name=${encodeURIComponent(productName)}`);
+    const response = await fetch(`${WMS_API_BASE}/materials/product-stats?name=${encodeURIComponent(productName)}`);
     const data = await response.json();
 
     if (data.error) {
@@ -151,7 +147,7 @@ async function loadProductMedia() {
 
 // 加载产品趋势数据 | Load product trend data
 async function loadProductTrend() {
-    const response = await fetch(`${API_BASE_URL}/materials/product-trend?name=${encodeURIComponent(productName)}`);
+    const response = await fetch(`${WMS_API_BASE}/materials/product-trend?name=${encodeURIComponent(productName)}`);
     const data = await response.json();
 
     const option = {
@@ -317,7 +313,7 @@ function loadPieChart(totalIn, totalOut) {
 
 // 加载出入库记录 | Load stock in/out records
 async function loadProductRecords() {
-    const response = await fetch(`${API_BASE_URL}/materials/product-records?name=${encodeURIComponent(productName)}`);
+    const response = await fetch(`${WMS_API_BASE}/materials/product-records?name=${encodeURIComponent(productName)}`);
     const data = await response.json();
 
     renderRecordsTable(data);
