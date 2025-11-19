@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>产品详情 - 仓库管理系统</title>
+    <title>Product Details | 产品详情 - HeySalad® Xin Yi WMS®</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
 </head>
@@ -15,25 +15,26 @@
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
                         <path d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
                     </svg>
-                    返回
+                    Back | 返回
                 </button>
-                <h1 id="product-title">产品详情</h1>
+                <img src="heysalad_white_logo.svg" alt="HeySalad" class="logo" style="height: 40px;">
+                <h1 id="product-title">Product Details | 产品详情</h1>
             </div>
             <button class="refresh-btn" onclick="loadProductData()">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
                     <path d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
                     <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
                 </svg>
-                刷新
+                Refresh | 刷新
             </button>
         </header>
 
-        <div class="subtitle">产品库存详情</div>
+        <div class="subtitle">Product Inventory Details | 产品库存详情</div>
 
         <div class="product-hero">
             <div class="product-hero-image-wrapper">
                 <img id="product-hero-image" class="product-hero-image hidden" alt="Product image">
-                <div id="product-hero-placeholder" class="product-hero-placeholder">图片加载中...</div>
+                <div id="product-hero-placeholder" class="product-hero-placeholder">Loading image... | 图片加载中...</div>
             </div>
             <div class="product-hero-meta">
                 <div class="meta-row">
@@ -41,11 +42,11 @@
                     <span class="meta-value" id="product-sku">-</span>
                 </div>
                 <div class="meta-row">
-                    <span class="meta-label">分类</span>
+                    <span class="meta-label">Category | 分类</span>
                     <span class="meta-value" id="product-category">-</span>
                 </div>
                 <div class="meta-row">
-                    <a id="product-source-link" class="meta-link hidden" href="#" target="_blank" rel="noopener">查看原始商品页面</a>
+                    <a id="product-source-link" class="meta-link hidden" href="#" target="_blank" rel="noopener">View Original Product Page | 查看原始商品页面</a>
                 </div>
             </div>
         </div>
@@ -61,9 +62,9 @@
                     </svg>
                 </div>
                 <div class="stat-content">
-                    <div class="stat-label">当前库存</div>
+                    <div class="stat-label">Current Stock | 当前库存</div>
                     <div class="stat-value" id="current-stock">-</div>
-                    <div class="stat-subtitle" id="stock-unit">件</div>
+                    <div class="stat-subtitle" id="stock-unit">units | 件</div>
                 </div>
             </div>
 
@@ -75,7 +76,7 @@
                     </svg>
                 </div>
                 <div class="stat-content">
-                    <div class="stat-label">今日入库</div>
+                    <div class="stat-label">Today's Stock-In | 今日入库</div>
                     <div class="stat-value" id="today-in">-</div>
                     <div class="stat-change positive" id="in-change">+0%</div>
                 </div>
@@ -89,7 +90,7 @@
                     </svg>
                 </div>
                 <div class="stat-content">
-                    <div class="stat-label">今日出库</div>
+                    <div class="stat-label">Today's Stock-Out | 今日出库</div>
                     <div class="stat-value" id="today-out">-</div>
                     <div class="stat-change positive" id="out-change">+0%</div>
                 </div>
@@ -104,7 +105,7 @@
                     </svg>
                 </div>
                 <div class="stat-content">
-                    <div class="stat-label">安全库存</div>
+                    <div class="stat-label">Safety Stock | 安全库存</div>
                     <div class="stat-value" id="safe-stock">-</div>
                     <div class="stat-subtitle" id="stock-status">-</div>
                 </div>
@@ -114,12 +115,12 @@
         <!-- 图表区域 -->
         <div class="charts-container">
             <div class="chart-wrapper">
-                <div class="chart-title">近7天出入库趋势</div>
+                <div class="chart-title">7-Day In/Out Trend | 近7天出入库趋势</div>
                 <div id="trend-chart" class="chart"></div>
             </div>
 
             <div class="chart-wrapper">
-                <div class="chart-title">出入库占比</div>
+                <div class="chart-title">In/Out Distribution | 出入库占比</div>
                 <div id="pie-chart" class="chart"></div>
             </div>
         </div>
@@ -127,17 +128,17 @@
         <!-- 出入库记录 -->
         <div class="alert-section">
             <div class="section-header">
-                <div class="section-title">出入库记录</div>
+                <div class="section-title">Transaction History | 出入库记录</div>
             </div>
             <div class="table-container">
                 <table id="records-table">
                     <thead>
                         <tr>
-                            <th>时间</th>
-                            <th>类型</th>
-                            <th>数量</th>
-                            <th>操作人</th>
-                            <th>原因</th>
+                            <th>Time | 时间</th>
+                            <th>Type | 类型</th>
+                            <th>Quantity | 数量</th>
+                            <th>Operator | 操作人</th>
+                            <th>Reason | 原因</th>
                         </tr>
                     </thead>
                     <tbody id="records-tbody">
