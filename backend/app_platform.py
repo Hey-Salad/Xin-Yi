@@ -22,14 +22,19 @@ load_dotenv()
 app = Flask(__name__)
 
 # Configure CORS for multiple origins
-CORS(app, origins=[
-    "https://xinyi.heysalad.app",
-    "https://heysalad.app",
-    "https://*.heysalad.app",
-    "https://vscode.heysalad.app",
-    "http://localhost:*",
-    "http://127.0.0.1:*"
-], supports_credentials=True)
+CORS(app, 
+     origins=[
+         "https://xinyi.heysalad.app",
+         "https://heysalad.app",
+         "https://*.heysalad.app",
+         "https://vscode.heysalad.app",
+         "http://localhost:2125",
+         "http://localhost:*",
+         "http://127.0.0.1:*"
+     ],
+     supports_credentials=True,
+     allow_headers=["Content-Type", "Authorization"],
+     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
 
 # Import and register blueprints
 from routes.wms_routes import wms_bp

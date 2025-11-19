@@ -11,7 +11,14 @@ wms_bp = Blueprint('wms', __name__, url_prefix='/api/wms')
 supabase = get_supabase_client()
 
 
-@wms_bp.route('/dashboard/stats', methods=['GET'])
+# Handle OPTIONS requests for CORS preflight
+@wms_bp.route('/<path:path>', methods=['OPTIONS'])
+def handle_options(path):
+    """Handle CORS preflight requests"""
+    return '', 204
+
+
+@wms_bp.route('/dashboard/stats', methods=['GET', 'OPTIONS'])
 def get_dashboard_stats():
     """获取仪表盘统计数据 | Get dashboard statistics"""
     try:
