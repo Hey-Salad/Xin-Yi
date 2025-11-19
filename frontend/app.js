@@ -169,7 +169,7 @@ async function loadCategoryDistribution() {
                     show: false
                 },
                 data: data,
-                color: ['#5470c6', '#91cc75', '#fac858', '#ee6666', '#73c0de', '#3ba272', '#fc8452', '#9a60b4']
+                color: ['#ed4c4c', '#faa09a', '#ffd0cd', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4', '#ec4899']
             }
         ]
     };
@@ -237,7 +237,7 @@ async function loadWeeklyTrend() {
                 smooth: true,
                 data: data.in_data,
                 itemStyle: {
-                    color: '#5470c6'
+                    color: '#10b981'
                 },
                 areaStyle: {
                     color: {
@@ -249,11 +249,11 @@ async function loadWeeklyTrend() {
                         colorStops: [
                             {
                                 offset: 0,
-                                color: 'rgba(84, 112, 198, 0.3)'
+                                color: 'rgba(16, 185, 129, 0.3)'
                             },
                             {
                                 offset: 1,
-                                color: 'rgba(84, 112, 198, 0.05)'
+                                color: 'rgba(16, 185, 129, 0.05)'
                             }
                         ]
                     }
@@ -265,7 +265,7 @@ async function loadWeeklyTrend() {
                 smooth: true,
                 data: data.out_data,
                 itemStyle: {
-                    color: '#ee6666'
+                    color: '#ed4c4c'
                 },
                 areaStyle: {
                     color: {
@@ -277,11 +277,11 @@ async function loadWeeklyTrend() {
                         colorStops: [
                             {
                                 offset: 0,
-                                color: 'rgba(238, 102, 102, 0.3)'
+                                color: 'rgba(237, 76, 76, 0.3)'
                             },
                             {
                                 offset: 1,
-                                color: 'rgba(238, 102, 102, 0.05)'
+                                color: 'rgba(237, 76, 76, 0.05)'
                             }
                         ]
                     }
@@ -358,11 +358,11 @@ async function loadTopStock() {
                         colorStops: [
                             {
                                 offset: 0,
-                                color: '#667eea'
+                                color: '#ed4c4c'
                             },
                             {
                                 offset: 1,
-                                color: '#764ba2'
+                                color: '#faa09a'
                             }
                         ]
                     },
