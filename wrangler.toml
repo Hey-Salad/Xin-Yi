@@ -1,0 +1,23 @@
+# Cloudflare Pages Configuration for Xin Yi Frontend
+
+name = "xinyi-heysalad"
+compatibility_date = "2024-01-01"
+
+[site]
+bucket = "./frontend"
+
+# Custom domain
+# Add in Cloudflare dashboard: xinyi.heysalad.app
+
+# Build configuration
+[build]
+command = ""
+cwd = ""
+watch_dirs = ["frontend"]
+
+# Environment variables (set in Cloudflare dashboard)
+[env.production]
+# No build-time env vars needed for static site
+
+[env.preview]
+# Preview deployments

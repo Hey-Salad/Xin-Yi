@@ -2,8 +2,10 @@
 // Production: https://wms.heysalad.app/api/wms
 // Local dev: http://localhost:2124/api/wms
 
-// Use local backend (now running with CORS fix)
-const API_BASE_URL = 'http://localhost:2124/api/wms';
+// API Base URL - Auto-detect environment
+const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:2124/api/wms'
+    : 'https://wms.heysalad.app/api/wms';
 
 console.log('🔗 API Backend:', API_BASE_URL);
 
