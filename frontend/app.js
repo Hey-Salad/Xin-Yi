@@ -48,8 +48,8 @@ async function loadAllData() {
             loadAllMaterials()
         ]);
     } catch (error) {
-        console.error('加载数据失败:', error);  // Failed to load data
-        alert('加载数据失败，请检查后端服务是否启动');  // Failed to load data, please check if backend service is running
+        console.error('Failed to load data | 加载数据失败:', error);
+        alert('Failed to load data. Please check if backend service is running.\n加载数据失败，请检查后端服务是否启动。');
     }
 }
 
@@ -191,7 +191,7 @@ async function loadWeeklyTrend() {
             }
         },
         legend: {
-            data: ['入库', '出库'],
+            data: ['Stock-In | 入库', 'Stock-Out | 出库'],
             textStyle: {
                 fontSize: 12
             }
@@ -233,7 +233,7 @@ async function loadWeeklyTrend() {
         },
         series: [
             {
-                name: '入库',
+                name: 'Stock-In | 入库',
                 type: 'line',
                 smooth: true,
                 data: data.in_data,
@@ -261,7 +261,7 @@ async function loadWeeklyTrend() {
                 }
             },
             {
-                name: '出库',
+                name: 'Stock-Out | 出库',
                 type: 'line',
                 smooth: true,
                 data: data.out_data,
@@ -307,7 +307,7 @@ async function loadTopStock() {
             },
             formatter: function(params) {
                 const index = params[0].dataIndex;
-                return `${data.names[index]}<br/>类型: ${data.categories[index]}<br/>库存: ${params[0].value}`;
+                return `${data.names[index]}<br/>Type | 类型: ${data.categories[index]}<br/>Stock | 库存: ${params[0].value}`;
             }
         },
         grid: {
@@ -401,7 +401,7 @@ function renderInventoryTable(data) {
     tbody.innerHTML = '';
 
     if (data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #999;">暂无数据</td></tr>';  // No data
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #999;">No data available | 暂无数据</td></tr>';
         return;
     }
 

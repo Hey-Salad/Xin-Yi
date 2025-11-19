@@ -82,20 +82,146 @@ def get_dashboard_stats():
         return jsonify({'error': str(e)}), 500
 
 
+@wms_bp.route('/dashboard/category-distribution', methods=['GET'])
+def get_category_distribution():
+    """获取类别分布 | Get category distribution for pie chart"""
+    try:
+        response = supabase.table('materials').select('category, quantity').execute()
+
+        # Group by category
+        category_map = {}
+        for item in response.data:
+            cat = item['category']
+            category_map[cat] = category_map.get(cat, 0) + item['quantity']
+
+        # Format for ECharts pie chart
+        result = [{'name': k, 'value': v} for k, v in category_map.items()]
+
+        return jsonify(result)
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@wms_bp.route('/dashboard/weekly-trend', methods=['GET'])
+def get_weekly_trend():
+    """获取7天趋势 | Get 7-day in/out trend"""
+    try:
+        dates = []
+        in_data = []
+        out_data = []
+
+        for i in range(6, -1, -1):  # Last 7 days
+            date = datetime.now() - timedelta(days=i)
+            day_start = date.replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
+            day_end = (date + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
+
+            dates.append(date.strftime('%m/%d'))
+
+            # Stock-in for this day
+            response_in = supabase.table('inventory_records')\
+                .select('quantity')\
+                .eq('type', 'in')\
+                .gte('created_at', day_start)\
+                .lt('created_at', day_end)\
+                .execute()
+            in_data.append(sum(item['quantity'] for item in response_in.data))
+
+            # Stock-out for this day
+            response_out = supabase.table('inventory_records')\
+                .select('quantity')\
+                .eq('type', 'out')\
+                .gte('created_at', day_start)\
+                .lt('created_at', day_end)\
+                .execute()
+            out_data.append(sum(item['quantity'] for item in response_out.data))
+
+        return jsonify({
+            'dates': dates,
+            'in_data': in_data,
+            'out_data': out_data
+        })
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@wms_bp.route('/dashboard/top-stock', methods=['GET'])
+def get_top_stock():
+    """获取库存TOP10 | Get top 10 materials by stock quantity"""
+    try:
+        response = supabase.table('materials')\
+            .select('name, category, quantity')\
+            .order('quantity', desc=True)\
+            .limit(10)\
+            .execute()
+
+        names = [item['name'] for item in response.data]
+        categories = [item['category'] for item in response.data]
+        quantities = [item['quantity'] for item in response.data]
+
+        return jsonify({
+            'names': names,
+            'categories': categories,
+            'quantities': quantities
+        })
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@wms_bp.route('/materials/all', methods=['GET'])
+def get_all_materials():
+    """获取所有物料 | Get all materials for inventory table"""
+    try:
+        response = supabase.table('materials')\
+            .select('id, name, sku, category, quantity, unit, safe_stock, location')\
+            .order('name')\
+            .execute()
+
+        # Add status information
+        result = []
+        for item in response.data:
+            qty = item['quantity']
+            safe = item['safe_stock']
+
+            # Determine status
+            if qty >= safe:
+                status = 'normal'
+                status_text = 'Normal | 正常'
+            elif qty >= safe * 0.5:
+                status = 'warning'
+                status_text = 'Low | 偏低'
+            else:
+                status = 'danger'
+                status_text = 'Critical | 严重'
+
+            result.append({
+                **item,
+                'status': status,
+                'status_text': status_text
+            })
+
+        return jsonify(result)
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 @wms_bp.route('/fefo-alerts', methods=['GET'])
 def get_fefo_alerts():
     """获取FEFO预警 | Get FEFO expiration alerts"""
     try:
         threshold_hours = int(request.args.get('hours', 48))
         threshold_date = (datetime.now() + timedelta(hours=threshold_hours)).date().isoformat()
-        
+
         response = supabase.table('inventory_lots')\
             .select('*, materials(name, sku, category)')\
             .eq('status', 'active')\
             .lte('expiration_date', threshold_date)\
             .order('expiration_date')\
             .execute()
-        
+
         alerts = []
         for lot in response.data:
             hours_until_expiry = (datetime.fromisoformat(lot['expiration_date']) - datetime.now()).total_seconds() / 3600
@@ -109,9 +235,9 @@ def get_fefo_alerts():
                 'hours_until_expiry': round(hours_until_expiry, 1),
                 'urgency': 'critical' if hours_until_expiry < 24 else 'warning'
             })
-        
+
         return jsonify(alerts)
-        
+
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
