@@ -1,9 +1,10 @@
 // API Base URL | API 基础 URL
-// For production: https://api.heysalad.app/api
-// For local dev: http://localhost:2124/api
-const API_BASE_URL = window.location.hostname === 'localhost' 
-    ? 'http://localhost:2124/api'
-    : 'https://api.heysalad.app/api';
+// For production: https://api.heysalad.app/api/wms
+// For local dev: http://localhost:2124/api/wms
+// For RPi: http://YOUR_RPI_IP:2124/api/wms
+const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:2124/api/wms'
+    : `http://${window.location.hostname}:2124/api/wms`;
 
 // 初始化图表 | Initialize charts
 let trendChart, categoryChart, topStockChart;
