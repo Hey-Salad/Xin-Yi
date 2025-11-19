@@ -377,6 +377,78 @@ heysalad-platform/
 
 ---
 
+## 🛒 Grocery Catalog Import
+
+The Longdan export now goes through a two-step pipeline so Xin Yi works with clean categories and keeps every CDN image URL for downstream uploads.
+
+### 1. Clean & normalize the dataset
+
+```bash
+uv run python scripts/clean_longdan_dataset.py --upload-storage catalog-cache
+```
+
+- Generates `longdan_inventory_clean.csv`, `longdan_inventory_clean_summary.json`, and `longdan_image_index.json` under `../heysalad-datasource/`.
+- Uploads the trio to the Supabase Storage bucket `catalog-cache` so other services (or MCP agents) can fetch category metadata + SKU→image mappings.
+- Optional flags:
+  - `--limit 200` to spot-check a small sample
+  - `--use-deepseek` to tap the DeepSeek agent (via `~/heysalad-mcp/agents`) for tricky category mappings—set `DEEPSEEK_API_KEY` first and the script will ask the LLM to map remaining “Pantry & Misc” entries into canonical buckets.
+
+### 2. Push the cleaned rows into Supabase
+
+```bash
+uv run python scripts/import_longdan_inventory.py
+```
+
+- Defaults to the cleaned CSV; use `--csv-path` if you keep variants elsewhere.
+- Same helper flags as before (`--dry-run`, `--limit`, `--batch-size`) to control the import cadence.
+- Re-run anytime—`upsert` keeps SKUs idempotent.
+
+### 3. Mirror CDN images into Supabase Storage
+
+```bash
+uv run python scripts/sync_catalog_images.py \
+  --bucket catalog-images \
+  --prefix products \
+  --skip-existing --workers 4
+```
+
+- Downloads each Longdan CDN thumbnail once and pushes it into the public `catalog-images/products` bucket so the frontend can load `storage_image_url` instead of hot-linking.
+- Safe to re-run; it skips files already present (or resumes after transient CDN disconnects).
+- Lower `--workers` if the source CDN throttles your IP; the script keeps a running count of uploads, skips, and errors.
+
+### How the pipeline adapts the catalog for HeySalad
+
+- **Category hygiene:** canonical buckets like “Noodles & Rice”, “Frozen & Chilled”, etc. are assigned via keyword rules and optional DeepSeek refinements so dashboards stay meaningful.
+- **Units, case sizes, and temperature zones** are parsed from variant text/tags, which feeds both the Supabase rows (`unit`, `unit_of_measure`, `temperature_zone`) and the storage JSON for MCP agents.
+- **Image preservation:** every SKU retains its `image_url` plus a deterministic filename inside `longdan_image_index.json`, making it easy to batch-upload into Supabase Storage or any CDN later.
+- **Quantities & safety stock** remain deterministic per SKU, scaled by price/availability, so KPI cards stay lively without real warehouse telemetry.
+
+After running the importer you can verify the dataset quickly:
+
+```bash
+uv run python - <<'PY'
+from backend.database_supabase import get_supabase_client
+supabase = get_supabase_client()
+resp = supabase.table('materials').select('id', count='exact').execute()
+print('Materials rows:', resp.count)
+client = supabase.storage.from_('catalog-images')
+count = 0
+limit = 1000
+offset = 0
+while True:
+    items = client.list('products', options={'limit': limit, 'offset': offset})
+    if not items:
+        break
+    count += len(items)
+    if len(items) < limit:
+        break
+    offset += limit
+print('Catalog images:', count)
+PY
+```
+
+---
+
 ## 🔐 Security
 
 - **Never commit `.env` files** - Use `.env.example` as template

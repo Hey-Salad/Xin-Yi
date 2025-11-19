@@ -440,12 +440,31 @@ async function loadAllMaterials() {
 }
 
 // 渲染库存表格 | Render inventory table
+function getInitialLetter(text) {
+    if (!text) return '?';
+    return text.trim().charAt(0).toUpperCase();
+}
+
+function createTextCell(content, className) {
+    const td = document.createElement('td');
+    if (className) td.classList.add(className);
+    td.textContent = content;
+    return td;
+}
+
 function renderInventoryTable(data) {
     const tbody = document.getElementById('inventory-tbody');
     tbody.innerHTML = '';
 
-    if (data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #999;">No data available | 暂无数据</td></tr>';
+    if (!data.length) {
+        const emptyRow = document.createElement('tr');
+        const emptyCell = document.createElement('td');
+        emptyCell.colSpan = 7;
+        emptyCell.style.textAlign = 'center';
+        emptyCell.style.color = '#999';
+        emptyCell.textContent = 'No data available | 暂无数据';
+        emptyRow.appendChild(emptyCell);
+        tbody.appendChild(emptyRow);
         return;
     }
 
@@ -453,28 +472,73 @@ function renderInventoryTable(data) {
         const tr = document.createElement('tr');
         tr.className = 'clickable';
 
-        let statusBadge = '';
-        if (item.status === 'normal') {
-            statusBadge = `<span class="status-badge status-normal">${item.status_text}</span>`;
-        } else if (item.status === 'warning') {
-            statusBadge = `<span class="status-badge status-warning">${item.status_text}</span>`;
+        // Product cell with thumbnail
+        const productTd = document.createElement('td');
+        productTd.className = 'product-cell';
+
+        const infoWrapper = document.createElement('div');
+        infoWrapper.className = 'material-info';
+
+        const thumbWrapper = document.createElement('div');
+        thumbWrapper.className = 'material-thumb';
+
+        const imageUrl = item.storage_image_url || item.image_url;
+
+        if (imageUrl) {
+            const img = document.createElement('img');
+            img.src = imageUrl;
+            img.alt = item.name;
+            img.loading = 'lazy';
+            img.onerror = () => {
+                thumbWrapper.classList.add('placeholder');
+                thumbWrapper.textContent = getInitialLetter(item.name);
+                img.remove();
+            };
+            thumbWrapper.appendChild(img);
         } else {
-            statusBadge = `<span class="status-badge status-danger">${item.status_text}</span>`;
+            thumbWrapper.classList.add('placeholder');
+            thumbWrapper.textContent = getInitialLetter(item.name);
         }
 
-        tr.innerHTML = `
-            <td>${item.name}</td>
-            <td>${item.sku}</td>
-            <td>${item.category}</td>
-            <td><strong>${item.quantity}</strong></td>
-            <td>${item.unit}</td>
-            <td>${item.safe_stock}</td>
-            <td>${statusBadge}</td>
-            <td>${item.location}</td>
-        `;
+        const metaWrapper = document.createElement('div');
+        metaWrapper.className = 'material-meta';
 
-        // 添加点击事件，跳转到产品详情页 | Add click event to navigate to product detail page
-        tr.addEventListener('click', function() {
+        const nameEl = document.createElement('div');
+        nameEl.className = 'material-name';
+        nameEl.textContent = item.name;
+
+        const skuEl = document.createElement('div');
+        skuEl.className = 'material-sku';
+        skuEl.textContent = item.sku;
+
+        metaWrapper.appendChild(nameEl);
+        metaWrapper.appendChild(skuEl);
+
+        infoWrapper.appendChild(thumbWrapper);
+        infoWrapper.appendChild(metaWrapper);
+        productTd.appendChild(infoWrapper);
+
+        tr.appendChild(productTd);
+        tr.appendChild(createTextCell(item.category || '-'));
+        tr.appendChild(createTextCell((item.quantity ?? 0).toLocaleString(), 'numeric-cell'));
+        tr.appendChild(createTextCell(item.unit || '-'));
+        tr.appendChild(createTextCell((item.safe_stock ?? 0).toLocaleString(), 'numeric-cell'));
+
+        const statusCell = document.createElement('td');
+        const badge = document.createElement('span');
+        badge.className = `status-badge status-${item.status}`;
+        badge.textContent = item.status_text;
+        statusCell.appendChild(badge);
+        tr.appendChild(statusCell);
+
+        tr.appendChild(createTextCell(item.location || '-'));
+
+        tr.addEventListener('click', () => {
+            if (imageUrl) {
+                sessionStorage.setItem('material_image_url', imageUrl);
+                sessionStorage.setItem('material_image_source', item.image_source_url || '');
+            }
+            sessionStorage.setItem('material_sku', item.sku);
             window.location.href = `product_detail.html?product=${encodeURIComponent(item.name)}`;
         });
 

@@ -5,6 +5,10 @@ const API_BASE_URL = window.location.hostname === 'localhost'
     ? 'http://localhost:2124/api'
     : 'https://api.heysalad.app/api';
 
+const WMS_API_BASE = window.location.hostname === 'localhost'
+    ? 'http://localhost:2124/api/wms'
+    : 'https://wms.heysalad.app/api/wms';
+
 // 初始化图表 | Initialize charts
 let trendChart, pieChart;
 let productName = '';
@@ -50,7 +54,8 @@ async function loadProductData() {
         await Promise.all([
             loadProductStats(),
             loadProductTrend(),
-            loadProductRecords()
+            loadProductRecords(),
+            loadProductMedia()
         ]);
     } catch (error) {
         console.error('加载数据失败:', error);  // Failed to load data
@@ -75,6 +80,9 @@ async function loadProductStats() {
     document.getElementById('today-in').textContent = data.today_in.toLocaleString();
     document.getElementById('today-out').textContent = data.today_out.toLocaleString();
     document.getElementById('safe-stock').textContent = data.safe_stock.toLocaleString();
+    if (data.sku) {
+        document.getElementById('product-sku').textContent = data.sku;
+    }
 
     // 更新变化百分比 | Update percentage change
     const inChange = document.getElementById('in-change');
@@ -100,6 +108,45 @@ async function loadProductStats() {
 
     // 更新饼图 | Update pie chart
     loadPieChart(data.total_in, data.total_out);
+}
+
+async function loadProductMedia() {
+    try {
+        const response = await fetch(`${WMS_API_BASE}/materials/info?name=${encodeURIComponent(productName)}`);
+        if (!response.ok) {
+            return;
+        }
+        const data = await response.json();
+        const heroImage = document.getElementById('product-hero-image');
+        const placeholder = document.getElementById('product-hero-placeholder');
+
+        const imageUrl = data.storage_image_url || data.image_url || sessionStorage.getItem('material_image_url');
+
+        if (imageUrl) {
+            heroImage.src = imageUrl;
+            heroImage.alt = data.name || productName;
+            heroImage.classList.remove('hidden');
+            placeholder.classList.add('hidden');
+        } else {
+            placeholder.textContent = '暂无图片';
+        }
+
+        document.getElementById('product-category').textContent = data.category || '-';
+        if (data.sku) {
+            document.getElementById('product-sku').textContent = data.sku;
+        }
+
+        const sourceLink = document.getElementById('product-source-link');
+        const sourceUrl = data.image_source_url || sessionStorage.getItem('material_image_source');
+        if (sourceUrl) {
+            sourceLink.href = sourceUrl;
+            sourceLink.classList.remove('hidden');
+        } else {
+            sourceLink.classList.add('hidden');
+        }
+    } catch (error) {
+        console.warn('Failed to load product media', error);
+    }
 }
 
 // 加载产品趋势数据 | Load product trend data

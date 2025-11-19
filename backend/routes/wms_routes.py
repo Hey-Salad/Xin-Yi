@@ -6,6 +6,7 @@ Food inventory, FEFO logic, lot tracking
 from flask import Blueprint, jsonify, request
 from datetime import datetime, timedelta
 from database_supabase import get_supabase_client
+from catalog_assets import get_material_media
 
 wms_bp = Blueprint('wms', __name__, url_prefix='/api/wms')
 supabase = get_supabase_client()
@@ -85,6 +86,44 @@ def get_dashboard_stats():
             'out_change': out_change
         })
         
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@wms_bp.route('/materials/info', methods=['GET'])
+def get_material_info():
+    """获取单个物料详情（含图片） | Get a single material with image metadata."""
+    sku = request.args.get('sku')
+    name = request.args.get('name')
+
+    if not sku and not name:
+        return jsonify({'error': 'Missing sku or name parameter'}), 400
+
+    try:
+        query = supabase.table('materials')\
+            .select('id, name, sku, category, quantity, unit, safe_stock, location')\
+            .limit(1)
+
+        if sku:
+            query = query.eq('sku', sku)
+        else:
+            query = query.eq('name', name)
+
+        response = query.execute()
+        if not response.data:
+            return jsonify({'error': 'Material not found'}), 404
+
+        item = response.data[0]
+        media = get_material_media(item['sku']) or {}
+
+        return jsonify({
+            **item,
+            'image_url': media.get('image_url'),
+            'image_filename': media.get('image_filename'),
+            'image_source_url': media.get('source_url'),
+            'storage_image_url': media.get('storage_image_url'),
+        })
+
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -203,10 +242,16 @@ def get_all_materials():
                 status = 'danger'
                 status_text = 'Critical | 严重'
 
+            media = get_material_media(item['sku']) or {}
+
             result.append({
                 **item,
                 'status': status,
-                'status_text': status_text
+                'status_text': status_text,
+                'image_url': media.get('image_url'),
+                'image_filename': media.get('image_filename'),
+                'image_source_url': media.get('source_url'),
+                'storage_image_url': media.get('storage_image_url'),
             })
 
         return jsonify(result)
