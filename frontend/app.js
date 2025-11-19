@@ -2,8 +2,8 @@
 // Production: https://wms.heysalad.app/api/wms
 // Local dev: http://localhost:2124/api/wms
 
-// Always use cloud backend for now since local backend isn't running
-const API_BASE_URL = 'https://wms.heysalad.app/api/wms';
+// Use local backend (now running with CORS fix)
+const API_BASE_URL = 'http://localhost:2124/api/wms';
 
 console.log('🔗 API Backend:', API_BASE_URL);
 
