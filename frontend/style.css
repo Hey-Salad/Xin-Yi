@@ -142,8 +142,9 @@ header h1 {
 
 .stat-label {
     font-size: 13px;
-    color: var(--text-gray);
+    color: var(--brand-white);
     margin-bottom: 8px;
+    font-weight: 500;
 }
 
 .stat-value {
@@ -155,7 +156,7 @@ header h1 {
 
 .stat-subtitle {
     font-size: 12px;
-    color: var(--text-light-gray);
+    color: rgba(255, 255, 255, 0.8);
 }
 
 .stat-change {

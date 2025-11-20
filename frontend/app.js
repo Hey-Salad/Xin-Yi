@@ -39,7 +39,7 @@ let trendChart, categoryChart, topStockChart;
 let allMaterials = []; // 存储所有物料数据 | Store all materials data
 let updateInterval = null; // 自动更新定时器 | Auto-update timer
 let countdownInterval = null; // 倒计时定时器 | Countdown timer
-let countdownSeconds = 3; // 倒计时秒数 | Countdown seconds
+let countdownSeconds = 30; // 倒计时秒数 | Countdown seconds (30s to reduce flashing)
 
 // 页面加载完成后初始化 | Initialize after page load
 document.addEventListener('DOMContentLoaded', function() {
@@ -135,14 +135,14 @@ function startAutoUpdate() {
         if (countdownSeconds <= 0) {
             // 更新所有数据 | Update all data
             loadAllData();
-            countdownSeconds = 3;
+            countdownSeconds = 30;
         }
     }, 1000);
 }
 
 // 重置倒计时 | Reset countdown
 function resetCountdown() {
-    countdownSeconds = 3;
+    countdownSeconds = 30;
     document.getElementById('countdown').textContent = countdownSeconds;
 }
 
