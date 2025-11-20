@@ -1,23 +1,25 @@
-# Cloudflare Pages Configuration for Xin Yi Frontend
+# Cloudflare Pages Configuration for Xin Yi Next.js Frontend
 
 name = "xinyi-heysalad"
 compatibility_date = "2024-01-01"
-
-[site]
-bucket = "./frontend"
+pages_build_output_dir = "./frontend-next/out"
 
 # Custom domain
 # Add in Cloudflare dashboard: xinyi.heysalad.app
 
-# Build configuration
+# Build configuration for Next.js
 [build]
-command = ""
-cwd = ""
-watch_dirs = ["frontend"]
+command = "cd frontend-next && npm install && npm run build"
+cwd = "."
+watch_dirs = ["frontend-next"]
 
-# Environment variables (set in Cloudflare dashboard)
-[env.production]
-# No build-time env vars needed for static site
+# Environment variables (set in Cloudflare dashboard or via secrets)
+[env.production.vars]
+# Add these in Cloudflare dashboard:
+# NEXT_PUBLIC_API_URL
+# NEXT_PUBLIC_SUPABASE_URL
+# NEXT_PUBLIC_SUPABASE_KEY
+# NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN
 
-[env.preview]
-# Preview deployments
+[env.preview.vars]
+# Preview environment variables
