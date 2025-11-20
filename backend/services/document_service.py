@@ -129,22 +129,24 @@ class DocumentGenerator:
     def _create_header(self) -> List:
         """Create Wise-style header - logo LEFT-aligned at top, company info below"""
         elements = []
-        
+
         # Logo FIRST - LEFT-aligned at top
         try:
             import os
             logo_path = os.path.join(os.path.dirname(__file__), 'heysalad_logo_black.png')
             if os.path.exists(logo_path):
                 logo = Image(logo_path, width=1.8*inch, height=0.54*inch)
-                # Use table with LEFT alignment and no padding
-                logo_table = Table([[logo]], colWidths=[1.8*inch])
+                # Use full-width table to ensure left alignment on page
+                # Letter size (8.5") - left margin (0.75") - right margin (0.75") = 7"
+                page_width = 7*inch
+                logo_table = Table([[logo, '']], colWidths=[1.8*inch, page_width - 1.8*inch])
                 logo_table.setStyle(TableStyle([
                     ('ALIGN', (0, 0), (0, 0), 'LEFT'),
                     ('VALIGN', (0, 0), (0, 0), 'TOP'),
-                    ('LEFTPADDING', (0, 0), (0, 0), 0),
-                    ('RIGHTPADDING', (0, 0), (0, 0), 0),
-                    ('TOPPADDING', (0, 0), (0, 0), 0),
-                    ('BOTTOMPADDING', (0, 0), (0, 0), 0),
+                    ('LEFTPADDING', (0, 0), (-1, -1), 0),
+                    ('RIGHTPADDING', (0, 0), (-1, -1), 0),
+                    ('TOPPADDING', (0, 0), (-1, -1), 0),
+                    ('BOTTOMPADDING', (0, 0), (-1, -1), 0),
                 ]))
                 elements.append(logo_table)
                 elements.append(Spacer(1, 0.15*inch))
