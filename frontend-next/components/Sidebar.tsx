@@ -9,7 +9,8 @@ import {
   FileText, 
   Camera, 
   Wrench, 
-  Users 
+  Users,
+  CheckSquare
 } from 'lucide-react';
 import LanguageSwitcher from './LanguageSwitcher';
 import { useLanguage } from '@/lib/LanguageContext';
@@ -24,6 +25,7 @@ export default function Sidebar() {
     { name: getTranslation(language, 'inventory'), href: '/inventory', icon: Package },
     { name: getTranslation(language, 'deliveries'), href: '/deliveries', icon: Truck },
     { name: getTranslation(language, 'documents'), href: '/documents', icon: FileText },
+    { name: getTranslation(language, 'approvals'), href: '/approvals', icon: CheckSquare },
     { name: getTranslation(language, 'cameras'), href: '/cameras', icon: Camera },
     { name: getTranslation(language, 'devices'), href: '/devices', icon: Wrench },
     { name: getTranslation(language, 'drivers'), href: '/drivers', icon: Users },

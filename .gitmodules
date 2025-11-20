@@ -1,0 +1,3 @@
+[submodule "devices/xiaozhi-esp32"]
+	path = devices/xiaozhi-esp32
+	url = https://github.com/78/xiaozhi-esp32

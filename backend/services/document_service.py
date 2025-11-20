@@ -130,26 +130,15 @@ class DocumentGenerator:
         """Create Wise-style header - logo LEFT-aligned at top, company info below"""
         elements = []
 
-        # Logo FIRST - LEFT-aligned at top
+        # Logo FIRST - LEFT-aligned at top (directly added, no table wrapper)
         try:
             import os
             logo_path = os.path.join(os.path.dirname(__file__), 'heysalad_logo_black.png')
             if os.path.exists(logo_path):
                 logo = Image(logo_path, width=1.8*inch, height=0.54*inch)
-                # Use full-width table to ensure left alignment on page
-                # Letter size (8.5") - left margin (0.75") - right margin (0.75") = 7"
-                page_width = 7*inch
-                logo_table = Table([[logo, '']], colWidths=[1.8*inch, page_width - 1.8*inch])
-                logo_table.setStyle(TableStyle([
-                    ('ALIGN', (0, 0), (0, 0), 'LEFT'),
-                    ('VALIGN', (0, 0), (0, 0), 'TOP'),
-                    ('LEFTPADDING', (0, 0), (-1, -1), 0),
-                    ('RIGHTPADDING', (0, 0), (-1, -1), 0),
-                    ('TOPPADDING', (0, 0), (-1, -1), 0),
-                    ('BOTTOMPADDING', (0, 0), (-1, -1), 0),
-                ]))
-                elements.append(logo_table)
-                elements.append(Spacer(1, 0.15*inch))
+                logo.hAlign = 'LEFT'  # Force left alignment
+                elements.append(logo)
+                elements.append(Spacer(1, 0.05*inch))  # Reduced from 0.15 to 0.05
         except Exception as e:
             pass
         
@@ -161,7 +150,7 @@ class DocumentGenerator:
             textColor=colors.black,
             alignment=TA_LEFT,
             fontName='Helvetica-Bold',
-            spaceAfter=4,
+            spaceAfter=2,  # Reduced from 4 to 2
         )
         
         company_name = Paragraph("<b>HeySalad Payments Ltd.</b>", company_name_style)

@@ -648,3 +648,281 @@ def get_available_documents():
     }
 
     return jsonify(documents)
+
+
+# ============= SIGNATURE ENDPOINTS =============
+
+from services.signature_service import add_signature_to_pdf
+
+def get_sample_document_data(doc_type):
+    """Get sample data for document generation"""
+    now = datetime.now()
+    
+    if doc_type in ['po-receipt', 'receiving-report', 'putaway-report']:
+        return {
+            'po_number': f'PO-{now.strftime("%Y%m%d")}',
+            'vendor': 'Sample Vendor',
+            'received_date': now,
+            'items': []
+        }
+    elif doc_type in ['inventory-report', 'stock-status', 'cycle-count']:
+        return {
+            'report_date': now,
+            'items': []
+        }
+    elif doc_type in ['pick-list', 'packing-slip', 'shipping-label']:
+        return {
+            'order_number': f'ORD-{now.strftime("%Y%m%d")}',
+            'customer': 'Sample Customer',
+            'ship_date': now,
+            'items': []
+        }
+    return {}
+
+@document_bp.route('/receiving/po-receipt/sign', methods=['POST'])
+def sign_po_receipt():
+    """Generate and sign PO Receipt"""
+    try:
+        data = request.json
+        print(f"Received sign request: {data.keys() if data else 'No data'}")
+        
+        signature_data = data.get('signature')
+        signer_name = data.get('signer_name')
+        
+        print(f"Signature data length: {len(signature_data) if signature_data else 0}")
+        print(f"Signer name: {signer_name}")
+        
+        if not signature_data or not signer_name:
+            return jsonify({'error': 'Signature and signer name required'}), 400
+        
+        # Generate original PDF with sample data
+        print("Generating original PDF...")
+        doc = POReceiptDocument()
+        sample_data = get_sample_document_data('po-receipt')
+        pdf_bytes = doc.generate_pdf(sample_data)
+        print(f"PDF generated, size: {len(pdf_bytes)} bytes")
+        
+        # Add signature
+        print("Adding signature to PDF...")
+        signed_pdf = add_signature_to_pdf(pdf_bytes, signature_data, signer_name)
+        print(f"Signed PDF created, size: {len(signed_pdf)} bytes")
+        
+        return send_file(
+            BytesIO(signed_pdf),
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name=f'po_receipt_signed_{datetime.now().strftime("%Y%m%d")}.pdf'
+        )
+    except Exception as e:
+        import traceback
+        print(f"Error in sign_po_receipt: {e}")
+        print(f"Traceback: {traceback.format_exc()}")
+        return jsonify({'error': str(e)}), 500
+
+
+@document_bp.route('/receiving/receiving-report/sign', methods=['POST'])
+def sign_receiving_report():
+    """Generate and sign Receiving Report"""
+    try:
+        data = request.json
+        signature_data = data.get('signature')
+        signer_name = data.get('signer_name')
+        
+        if not signature_data or not signer_name:
+            return jsonify({'error': 'Signature and signer name required'}), 400
+        
+        doc = ReceivingReportDocument()
+        sample_data = get_sample_document_data('receiving-report')
+        pdf_bytes = doc.generate_pdf(sample_data)
+        signed_pdf = add_signature_to_pdf(pdf_bytes, signature_data, signer_name)
+        
+        return send_file(
+            BytesIO(signed_pdf),
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name=f'receiving_report_signed_{datetime.now().strftime("%Y%m%d")}.pdf'
+        )
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@document_bp.route('/receiving/putaway-report/sign', methods=['POST'])
+def sign_putaway_report():
+    """Generate and sign Putaway Report"""
+    try:
+        data = request.json
+        signature_data = data.get('signature')
+        signer_name = data.get('signer_name')
+        
+        if not signature_data or not signer_name:
+            return jsonify({'error': 'Signature and signer name required'}), 400
+        
+        doc = PutawayReportDocument()
+        sample_data = get_sample_document_data('putaway-report')
+        pdf_bytes = doc.generate_pdf(sample_data)
+        signed_pdf = add_signature_to_pdf(pdf_bytes, signature_data, signer_name)
+        
+        return send_file(
+            BytesIO(signed_pdf),
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name=f'putaway_report_signed_{datetime.now().strftime("%Y%m%d")}.pdf'
+        )
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@document_bp.route('/inventory/inventory-report/sign', methods=['POST'])
+def sign_inventory_report():
+    """Generate and sign Inventory Report"""
+    try:
+        data = request.json
+        signature_data = data.get('signature')
+        signer_name = data.get('signer_name')
+        
+        if not signature_data or not signer_name:
+            return jsonify({'error': 'Signature and signer name required'}), 400
+        
+        doc = InventoryReportDocument()
+        sample_data = get_sample_document_data('inventory-report')
+        pdf_bytes = doc.generate_pdf(sample_data)
+        signed_pdf = add_signature_to_pdf(pdf_bytes, signature_data, signer_name)
+        
+        return send_file(
+            BytesIO(signed_pdf),
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name=f'inventory_report_signed_{datetime.now().strftime("%Y%m%d")}.pdf'
+        )
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@document_bp.route('/inventory/stock-status/sign', methods=['POST'])
+def sign_stock_status():
+    """Generate and sign Stock Status Report"""
+    try:
+        data = request.json
+        signature_data = data.get('signature')
+        signer_name = data.get('signer_name')
+        
+        if not signature_data or not signer_name:
+            return jsonify({'error': 'Signature and signer name required'}), 400
+        
+        doc = StockStatusReportDocument()
+        sample_data = get_sample_document_data('stock-status')
+        pdf_bytes = doc.generate_pdf(sample_data)
+        signed_pdf = add_signature_to_pdf(pdf_bytes, signature_data, signer_name)
+        
+        return send_file(
+            BytesIO(signed_pdf),
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name=f'stock_status_signed_{datetime.now().strftime("%Y%m%d")}.pdf'
+        )
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@document_bp.route('/inventory/cycle-count/sign', methods=['POST'])
+def sign_cycle_count():
+    """Generate and sign Cycle Count Report"""
+    try:
+        data = request.json
+        signature_data = data.get('signature')
+        signer_name = data.get('signer_name')
+        
+        if not signature_data or not signer_name:
+            return jsonify({'error': 'Signature and signer name required'}), 400
+        
+        doc = CycleCountReportDocument()
+        sample_data = get_sample_document_data('cycle-count')
+        pdf_bytes = doc.generate_pdf(sample_data)
+        signed_pdf = add_signature_to_pdf(pdf_bytes, signature_data, signer_name)
+        
+        return send_file(
+            BytesIO(signed_pdf),
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name=f'cycle_count_signed_{datetime.now().strftime("%Y%m%d")}.pdf'
+        )
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@document_bp.route('/fulfillment/pick-list/sign', methods=['POST'])
+def sign_pick_list():
+    """Generate and sign Pick List"""
+    try:
+        data = request.json
+        signature_data = data.get('signature')
+        signer_name = data.get('signer_name')
+        
+        if not signature_data or not signer_name:
+            return jsonify({'error': 'Signature and signer name required'}), 400
+        
+        doc = PickListDocument()
+        sample_data = get_sample_document_data('pick-list')
+        pdf_bytes = doc.generate_pdf(sample_data)
+        signed_pdf = add_signature_to_pdf(pdf_bytes, signature_data, signer_name)
+        
+        return send_file(
+            BytesIO(signed_pdf),
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name=f'pick_list_signed_{datetime.now().strftime("%Y%m%d")}.pdf'
+        )
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@document_bp.route('/fulfillment/packing-slip/sign', methods=['POST'])
+def sign_packing_slip():
+    """Generate and sign Packing Slip"""
+    try:
+        data = request.json
+        signature_data = data.get('signature')
+        signer_name = data.get('signer_name')
+        
+        if not signature_data or not signer_name:
+            return jsonify({'error': 'Signature and signer name required'}), 400
+        
+        doc = PackingSlipDocument()
+        sample_data = get_sample_document_data('packing-slip')
+        pdf_bytes = doc.generate_pdf(sample_data)
+        signed_pdf = add_signature_to_pdf(pdf_bytes, signature_data, signer_name)
+        
+        return send_file(
+            BytesIO(signed_pdf),
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name=f'packing_slip_signed_{datetime.now().strftime("%Y%m%d")}.pdf'
+        )
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@document_bp.route('/fulfillment/shipping-label/sign', methods=['POST'])
+def sign_shipping_label():
+    """Generate and sign Shipping Label"""
+    try:
+        data = request.json
+        signature_data = data.get('signature')
+        signer_name = data.get('signer_name')
+        
+        if not signature_data or not signer_name:
+            return jsonify({'error': 'Signature and signer name required'}), 400
+        
+        doc = ShippingLabelDocument()
+        sample_data = get_sample_document_data('shipping-label')
+        pdf_bytes = doc.generate_pdf(sample_data)
+        signed_pdf = add_signature_to_pdf(pdf_bytes, signature_data, signer_name)
+        
+        return send_file(
+            BytesIO(signed_pdf),
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name=f'shipping_label_signed_{datetime.now().strftime("%Y%m%d")}.pdf'
+        )
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500

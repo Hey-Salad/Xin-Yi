@@ -14,7 +14,6 @@ export default function DocumentsPage() {
   const generateDocument = async (type: string, endpoint: string) => {
     setGenerating(type);
     try {
-      // Use GET for simpler document generation
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'GET',
       });
