@@ -41,11 +41,13 @@ from routes.wms_routes import wms_bp
 from routes.ai_routes import ai_bp
 from routes.payment_routes import payment_bp
 from routes.communication_routes import comm_bp
+from routes.document_routes import document_bp
 
 app.register_blueprint(wms_bp)
 app.register_blueprint(ai_bp)
 app.register_blueprint(payment_bp)
 app.register_blueprint(comm_bp)
+app.register_blueprint(document_bp)
 
 
 @app.route('/', methods=['GET'])
@@ -59,6 +61,11 @@ def index():
                 'name': 'Xin Yi - Warehouse Management',
                 'prefix': '/api/wms',
                 'description': 'Food inventory management with FEFO logic'
+            },
+            'documents': {
+                'name': 'WMS Document Generation',
+                'prefix': '/api/documents',
+                'description': 'Generate warehouse documents (PO receipts, pick lists, reports, etc.)'
             },
             'ai': {
                 'name': 'AI Services',
@@ -153,6 +160,7 @@ if __name__ == '__main__':
     print("=" * 60)
     print("\n📦 Available Services:")
     print("  • WMS (Xin Yi): /api/wms/*")
+    print("  • Documents: /api/documents/*")
     print("  • AI Services: /api/ai/*")
     print("  • Payments: /api/payment/*")
     print("  • Communication: /api/communication/*")

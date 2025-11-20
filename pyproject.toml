@@ -28,6 +28,12 @@ dependencies = [
     # MCP Integration
     "fastmcp>=2.13.0.2",
     "mcp>=1.21.0",
+
+    # Document Generation
+    "reportlab>=4.0.0",
+    "qrcode>=7.4.2",
+    "pillow>=10.0.0",
+    "python-barcode>=0.15.0",
 ]
 
 [project.optional-dependencies]

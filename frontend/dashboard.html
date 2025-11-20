@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xin Yi WMS - Command Center</title>
+
+    <!-- Figtree Font (Laura's font) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
+
+    <!-- Mapbox GL JS -->
+    <link href='https://api.mapbox.com/mapbox-gl-js/v3.0.0/mapbox-gl.css' rel='stylesheet' />
+    <script src='https://api.mapbox.com/mapbox-gl-js/v3.0.0/mapbox-gl.js'></script>
+
+    <!-- ECharts -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* Laura Brand Colors */
+            --brand-cherry: #ed4c4c;
+            --brand-peach: #faa09a;
+            --brand-light-peach: #ffd0cd;
+            --brand-white: #ffffff;
+
+            /* Dark Theme */
+            --bg-black: #000000;
+            --bg-zinc-900: #18181b;
+            --bg-zinc-800: #27272a;
+            --text-white: #ffffff;
+            --text-gray-400: #a1a1aa;
+            --text-gray-500: #71717a;
+            --border-zinc: #3f3f46;
+        }
+
+        body {
+            font-family: 'Figtree', system-ui, -apple-system, sans-serif;
+            background: var(--bg-black);
+            color: var(--text-white);
+            overflow-x: hidden;
+        }
+
+        /* Glass-morphism effect */
+        .glass {
+            background: rgba(24, 24, 27, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 240px;
+            height: 100vh;
+            background: var(--bg-zinc-900);
+            border-right: 1px solid var(--border-zinc);
+            padding: 24px 16px;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 32px;
+            padding: 0 8px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--brand-cherry);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 20px;
+        }
+
+        .logo-text {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            margin-bottom: 4px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text-gray-400);
+            text-decoration: none;
+        }
+
+        .nav-item:hover {
+            background: var(--bg-zinc-800);
+            color: var(--text-white);
+        }
+
+        .nav-item.active {
+            background: var(--brand-cherry);
+            color: var(--brand-white);
+        }
+
+        .nav-icon {
+            font-size: 20px;
+            width: 24px;
+            text-align: center;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 240px;
+            padding: 24px;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .header-title {
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            font-family: 'Figtree', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--brand-cherry);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #d93d3d;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--bg-zinc-800);
+            color: var(--text-white);
+            border: 1px solid var(--border-zinc);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-zinc-900);
+        }
+
+        /* Grid Layout */
+        .grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .grid-2 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .grid-3 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .grid-4 {
+            grid-template-columns: repeat(4, 1fr);
+        }
+
+        /* Cards */
+        .card {
+            padding: 24px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--text-gray-400);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Stats Cards */
+        .stat-card {
+            padding: 20px;
+        }
+
+        .stat-value {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: var(--text-gray-400);
+        }
+
+        .stat-change {
+            font-size: 12px;
+            margin-top: 8px;
+        }
+
+        .stat-change.positive {
+            color: #10b981;
+        }
+
+        .stat-change.negative {
+            color: #ef4444;
+        }
+
+        /* Map Container */
+        #map {
+            height: 500px;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        /* Table */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid var(--border-zinc);
+            color: var(--text-gray-400);
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 16px 12px;
+            border-bottom: 1px solid var(--border-zinc);
+        }
+
+        tr:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        /* Status badges */
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        .badge-warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+        }
+
+        .badge-danger {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        /* Loading state */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 200px;
+            color: var(--text-gray-400);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .grid-4 { grid-template-columns: repeat(2, 1fr); }
+            .grid-3 { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .grid-2, .grid-3, .grid-4 {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+        <div class="logo">
+            <div class="logo-icon">馨</div>
+            <div class="logo-text">Xin Yi</div>
+        </div>
+
+        <nav>
+            <a href="#dashboard" class="nav-item active" data-page="dashboard">
+                <span class="nav-icon">📊</span>
+                <span>Dashboard</span>
+            </a>
+            <a href="#inventory" class="nav-item" data-page="inventory">
+                <span class="nav-icon">📦</span>
+                <span>Inventory</span>
+            </a>
+            <a href="#deliveries" class="nav-item" data-page="deliveries">
+                <span class="nav-icon">🚚</span>
+                <span>Deliveries</span>
+            </a>
+            <a href="#documents" class="nav-item" data-page="documents">
+                <span class="nav-icon">📄</span>
+                <span>Documents</span>
+            </a>
+            <a href="#cameras" class="nav-item" data-page="cameras">
+                <span class="nav-icon">📹</span>
+                <span>Cameras</span>
+            </a>
+            <a href="#devices" class="nav-item" data-page="devices">
+                <span class="nav-icon">🔧</span>
+                <span>Devices</span>
+            </a>
+            <a href="#drivers" class="nav-item" data-page="drivers">
+                <span class="nav-icon">👤</span>
+                <span>Drivers</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Dashboard View -->
+        <div id="dashboard-view" class="view-container">
+            <div class="header">
+                <h1 class="header-title">WMS Command Center</h1>
+                <div class="header-actions">
+                    <button class="btn btn-secondary" onclick="refreshData()">
+                        <span>🔄</span> Refresh
+                    </button>
+                    <button class="btn btn-primary" onclick="showQuickActions()">
+                        <span>⚡</span> Quick Actions
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="grid grid-4" style="margin-bottom: 24px;">
+                <div class="glass stat-card">
+                    <div class="stat-value" id="total-stock">-</div>
+                    <div class="stat-label">Total Stock</div>
+                    <div class="stat-change positive" id="stock-change">-</div>
+                </div>
+                <div class="glass stat-card">
+                    <div class="stat-value" id="today-in">-</div>
+                    <div class="stat-label">Today's Stock In</div>
+                    <div class="stat-change positive" id="in-change">-</div>
+                </div>
+                <div class="glass stat-card">
+                    <div class="stat-value" id="today-out">-</div>
+                    <div class="stat-label">Today's Stock Out</div>
+                    <div class="stat-change negative" id="out-change">-</div>
+                </div>
+                <div class="glass stat-card">
+                    <div class="stat-value" id="low-stock">-</div>
+                    <div class="stat-label">Low Stock Alerts</div>
+                    <div class="stat-change negative">⚠️ Requires attention</div>
+                </div>
+            </div>
+
+            <!-- Delivery Map -->
+            <div class="glass card" style="margin-bottom: 24px;">
+                <h2 class="card-title">🗺️ Delivery Tracking</h2>
+                <div id="map"></div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="grid grid-2">
+                <div class="glass card">
+                    <h2 class="card-title">📈 Category Distribution</h2>
+                    <div id="category-chart" style="height: 300px;"></div>
+                </div>
+                <div class="glass card">
+                    <h2 class="card-title">📊 7-Day Trend</h2>
+                    <div id="trend-chart" style="height: 300px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Documents View (Hidden by default) -->
+        <div id="documents-view" class="view-container" style="display: none;">
+            <div class="header">
+                <h1 class="header-title">📄 Document Center</h1>
+                <div class="header-actions">
+                    <button class="btn btn-primary" onclick="generateDocument()">
+                        <span>+</span> Generate Document
+                    </button>
+                </div>
+            </div>
+
+            <!-- Document Types Grid -->
+            <div class="grid grid-3">
+                <!-- Receiving Documents -->
+                <div class="glass card document-category">
+                    <h3 style="color: var(--brand-cherry); margin-bottom: 16px;">📥 Receiving</h3>
+                    <button class="btn btn-secondary" style="width: 100%; margin-bottom: 8px;" onclick="generateDoc('po-receipt')">
+                        PO Receipt
+                    </button>
+                    <button class="btn btn-secondary" style="width: 100%; margin-bottom: 8px;" onclick="generateDoc('receiving-report')">
+                        Receiving Report
+                    </button>
+                    <button class="btn btn-secondary" style="width: 100%;" onclick="generateDoc('putaway-report')">
+                        Putaway Report
+                    </button>
+                </div>
+
+                <!-- Inventory Documents -->
+                <div class="glass card document-category">
+                    <h3 style="color: var(--brand-peach); margin-bottom: 16px;">📦 Inventory</h3>
+                    <button class="btn btn-secondary" style="width: 100%; margin-bottom: 8px;" onclick="generateDoc('inventory-report')">
+                        Inventory Report
+                    </button>
+                    <button class="btn btn-secondary" style="width: 100%; margin-bottom: 8px;" onclick="generateDoc('stock-status')">
+                        Stock Status
+                    </button>
+                    <button class="btn btn-secondary" style="width: 100%;" onclick="generateDoc('cycle-count')">
+                        Cycle Count
+                    </button>
+                </div>
+
+                <!-- Fulfillment Documents -->
+                <div class="glass card document-category">
+                    <h3 style="color: var(--brand-light-peach); margin-bottom: 16px;">🚚 Fulfillment</h3>
+                    <button class="btn btn-secondary" style="width: 100%; margin-bottom: 8px;" onclick="generateDoc('pick-list')">
+                        Pick List
+                    </button>
+                    <button class="btn btn-secondary" style="width: 100%; margin-bottom: 8px;" onclick="generateDoc('packing-slip')">
+                        Packing Slip
+                    </button>
+                    <button class="btn btn-secondary" style="width: 100%;" onclick="generateDoc('shipping-label')">
+                        Shipping Label
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>
