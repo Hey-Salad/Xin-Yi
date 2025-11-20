@@ -1,0 +1,28 @@
+idf_component_register(
+    SRCS
+        "main.c"
+        "config.c"
+        "wifi_manager.c"
+        "http_server.c"
+        "websocket_handler.c"
+        "xinyi_client.c"
+    INCLUDE_DIRS
+        "."
+        "include"
+    REQUIRES
+        esp_http_server
+        esp_wifi
+        nvs_flash
+        esp_netif
+        esp_event
+        esp_timer
+        driver
+        spiffs
+        esp_lcd
+        fatfs
+        json
+        camera
+        display
+        network
+        xinyi_client
+)

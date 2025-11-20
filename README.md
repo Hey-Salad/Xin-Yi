@@ -317,7 +317,11 @@ We welcome contributions! Here's how:
 - Maintain bilingual support (EN | 中文)
 
 ### **Get Help with Claude AI**
-Tag [@claude](https://github.com/apps/claude-for-github) in issues and PRs for AI assistance!
+
+**Install the GitHub App:**
+Run `/install-github-app` to add Claude to this repository for automated code reviews and PR assistance!
+
+Once installed, tag [@claude](https://github.com/apps/claude-for-github) in issues and PRs for AI assistance!
 
 ---
 
