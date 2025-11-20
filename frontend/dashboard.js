@@ -3,8 +3,14 @@
  * Real-time inventory, delivery tracking, documents, cameras, and devices
  */
 
-const API_BASE = 'http://localhost:2124/api';
+// API Base URL - Auto-detect environment
+const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:2124/api'
+    : 'https://wms.heysalad.app/api';
+
 const MAPBOX_TOKEN = 'YOUR_MAPBOX_TOKEN_HERE'; // TODO: Add your Mapbox token
+
+console.log('🔗 Dashboard API Backend:', API_BASE);
 
 // Global state
 let map = null;
