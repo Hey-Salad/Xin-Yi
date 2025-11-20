@@ -119,8 +119,18 @@ function updateStats(stats) {
     const inChange = stats.in_change || 0;
     const outChange = stats.out_change || 0;
 
-    document.getElementById('in-change').textContent = `${inChange >= 0 ? '↑' : '↓'} ${Math.abs(inChange)}% from yesterday`;
-    document.getElementById('out-change').textContent = `${outChange >= 0 ? '↑' : '↓'} ${Math.abs(outChange)}% from yesterday`;
+    const inChangeEl = document.getElementById('in-change');
+    const outChangeEl = document.getElementById('out-change');
+    
+    if (inChangeEl) {
+        inChangeEl.textContent = `${inChange >= 0 ? '↑' : '↓'} ${Math.abs(inChange)}% from yesterday`;
+        inChangeEl.className = inChange >= 0 ? 'stat-change positive' : 'stat-change negative';
+    }
+    
+    if (outChangeEl) {
+        outChangeEl.textContent = `${outChange >= 0 ? '↑' : '↓'} ${Math.abs(outChange)}% from yesterday`;
+        outChangeEl.className = outChange >= 0 ? 'stat-change positive' : 'stat-change negative';
+    }
 }
 
 function renderCategoryChart(data) {

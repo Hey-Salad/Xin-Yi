@@ -1,0 +1,227 @@
+/* Landing Page Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --brand-cherry: #ed4c4c;
+    --brand-peach: #faa09a;
+    --brand-light-peach: #ffd0cd;
+    --brand-white: #ffffff;
+    --bg-black: #000000;
+    --bg-zinc-900: #18181b;
+    --text-white: #ffffff;
+    --text-gray-400: #a1a1aa;
+}
+
+body {
+    font-family: 'Figtree', system-ui, -apple-system, sans-serif;
+    background: linear-gradient(135deg, #000000 0%, #18181b 100%);
+    color: var(--text-white);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow-x: hidden;
+}
+
+.landing-container {
+    max-width: 1200px;
+    padding: 48px 24px;
+    text-align: center;
+}
+
+.logo-section {
+    margin-bottom: 48px;
+    animation: fadeInDown 0.8s ease-out;
+}
+
+.logo-icon {
+    width: 120px;
+    height: 120px;
+    background: var(--brand-cherry);
+    border-radius: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 64px;
+    font-weight: 700;
+    margin-bottom: 24px;
+    box-shadow: 0 20px 60px rgba(237, 76, 76, 0.3);
+}
+
+.logo-text {
+    font-size: 48px;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+.logo-subtitle {
+    font-size: 20px;
+    color: var(--text-gray-400);
+}
+
+.hero-section {
+    margin-bottom: 64px;
+    animation: fadeInUp 0.8s ease-out 0.2s both;
+}
+
+.hero-title {
+    font-size: 56px;
+    font-weight: 700;
+    margin-bottom: 24px;
+    background: linear-gradient(135deg, var(--brand-cherry) 0%, var(--brand-peach) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.hero-description {
+    font-size: 20px;
+    color: var(--text-gray-400);
+    max-width: 600px;
+    margin: 0 auto 48px;
+    line-height: 1.6;
+}
+
+.cta-buttons {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn {
+    padding: 16px 32px;
+    border-radius: 12px;
+    border: none;
+    font-family: 'Figtree', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: var(--brand-cherry);
+    color: white;
+    box-shadow: 0 8px 24px rgba(237, 76, 76, 0.3);
+}
+
+.btn-primary:hover {
+    background: #d93d3d;
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(237, 76, 76, 0.4);
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-white);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(12px);
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    margin-top: 64px;
+    animation: fadeInUp 0.8s ease-out 0.4s both;
+}
+
+.feature-card {
+    background: rgba(24, 24, 27, 0.7);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 32px;
+    transition: all 0.3s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--brand-cherry);
+    box-shadow: 0 12px 32px rgba(237, 76, 76, 0.2);
+}
+
+.feature-icon {
+    width: 64px;
+    height: 64px;
+    background: linear-gradient(135deg, var(--brand-cherry) 0%, var(--brand-peach) 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+}
+
+.feature-icon svg {
+    width: 32px;
+    height: 32px;
+    stroke: white;
+}
+
+.feature-title {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+.feature-description {
+    font-size: 14px;
+    color: var(--text-gray-400);
+    line-height: 1.6;
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 36px;
+    }
+    
+    .hero-description {
+        font-size: 16px;
+    }
+    
+    .cta-buttons {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
