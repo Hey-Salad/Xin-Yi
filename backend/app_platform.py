@@ -10,7 +10,7 @@ This is the main backend for all HeySalad services:
 - Future services...
 """
 
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 import os
 from dotenv import load_dotenv
@@ -48,6 +48,22 @@ app.register_blueprint(ai_bp)
 app.register_blueprint(payment_bp)
 app.register_blueprint(comm_bp)
 app.register_blueprint(document_bp)
+
+
+# Add explicit OPTIONS handler for CORS preflight
+@app.before_request
+def handle_preflight():
+    """Handle CORS preflight OPTIONS requests"""
+    if request.method == 'OPTIONS':
+        response = app.make_default_options_response()
+        # Allow cross-origin requests from xinyi.heysalad.app
+        origin = request.headers.get('Origin')
+        if origin:
+            response.headers['Access-Control-Allow-Origin'] = origin
+            response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
+            response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+            response.headers['Access-Control-Allow-Credentials'] = 'true'
+        return response
 
 
 @app.route('/', methods=['GET'])
