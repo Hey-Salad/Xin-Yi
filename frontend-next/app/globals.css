@@ -28,9 +28,9 @@ body {
   @apply bg-zinc-600;
 }
 
-/* Glass morphism effect */
+/* Solid backgrounds for minimalist design */
 .glass {
-  @apply bg-zinc-900/70 backdrop-blur-sm border border-zinc-800;
+  @apply bg-zinc-900 border border-zinc-800;
 }
 
 /* Animations */

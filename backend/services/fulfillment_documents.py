@@ -10,6 +10,8 @@ Order Fulfillment & Shipping Documents
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.units import inch
+from reportlab.lib.styles import ParagraphStyle
+from reportlab.lib.enums import TA_CENTER
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, KeepTogether
 from io import BytesIO
 from datetime import datetime
@@ -42,7 +44,7 @@ class PickListDocument(DocumentGenerator):
             }
         """
         buffer = BytesIO()
-        doc = SimpleDocTemplate(buffer, pagesize=letter)
+        doc = SimpleDocTemplate(buffer, pagesize=letter, topMargin=0.4*inch, leftMargin=0.75*inch, rightMargin=0.75*inch)
         elements = []
 
         # Header
@@ -95,14 +97,14 @@ class PickListDocument(DocumentGenerator):
 
         table = Table(table_data, colWidths=[0.4*inch, 0.8*inch, 2*inch, 1*inch, 0.9*inch, 0.6*inch, 0.7*inch])
         table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#2c3e50')),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#f0f0f0')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
             ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
             ('ALIGN', (5, 1), (6, -1), 'CENTER'),
             ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
             ('FONTSIZE', (0, 0), (-1, -1), 9),
             ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
-            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f5f5f5')]),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.white]),
             ('TOPPADDING', (0, 0), (-1, -1), 12),
             ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
         ]))
@@ -165,7 +167,7 @@ class PackingSlipDocument(DocumentGenerator):
             }
         """
         buffer = BytesIO()
-        doc = SimpleDocTemplate(buffer, pagesize=letter)
+        doc = SimpleDocTemplate(buffer, pagesize=letter, topMargin=0.4*inch, leftMargin=0.75*inch, rightMargin=0.75*inch)
         elements = []
 
         # Header
@@ -238,15 +240,15 @@ class PackingSlipDocument(DocumentGenerator):
 
         table = Table(table_data, colWidths=[1.2*inch, 3*inch, 1.3*inch, 1*inch])
         table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#2c3e50')),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#f0f0f0')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
             ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
             ('ALIGN', (3, 1), (3, -1), 'CENTER'),
             ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
             ('FONTSIZE', (0, 0), (-1, -1), 9),
             ('GRID', (0, 0), (-1, -2), 0.5, colors.grey),
             ('LINEABOVE', (0, -1), (-1, -1), 2, colors.black),
-            ('ROWBACKGROUNDS', (0, 1), (-1, -2), [colors.white, colors.HexColor('#f5f5f5')]),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -2), [colors.white, colors.white]),
             ('TOPPADDING', (0, 0), (-1, -1), 8),
             ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
         ]))
@@ -393,7 +395,7 @@ class BillOfLadingDocument(DocumentGenerator):
             }
         """
         buffer = BytesIO()
-        doc = SimpleDocTemplate(buffer, pagesize=letter)
+        doc = SimpleDocTemplate(buffer, pagesize=letter, topMargin=0.4*inch, leftMargin=0.75*inch, rightMargin=0.75*inch)
         elements = []
 
         # Header
@@ -473,15 +475,15 @@ class BillOfLadingDocument(DocumentGenerator):
 
         table = Table(table_data, colWidths=[3*inch, 1*inch, 1.2*inch, 1*inch])
         table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#2c3e50')),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#f0f0f0')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
             ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
             ('ALIGN', (1, 1), (2, -1), 'CENTER'),
             ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
             ('FONTSIZE', (0, 0), (-1, -1), 9),
             ('GRID', (0, 0), (-1, -2), 0.5, colors.grey),
             ('LINEABOVE', (0, -1), (-1, -1), 2, colors.black),
-            ('ROWBACKGROUNDS', (0, 1), (-1, -2), [colors.white, colors.HexColor('#f5f5f5')]),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -2), [colors.white, colors.white]),
             ('TOPPADDING', (0, 0), (-1, -1), 8),
             ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
         ]))

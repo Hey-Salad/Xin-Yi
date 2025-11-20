@@ -127,7 +127,7 @@ export default function InventoryPage() {
             <tbody>
               {filteredMaterials.map((material) => (
                 <tr
-                  key={material.id}
+                  key={material.sku}
                   className="border-b border-zinc-800 hover:bg-zinc-800/50 cursor-pointer transition-colors"
                   onClick={() => window.location.href = `/product/${encodeURIComponent(material.name)}`}
                 >

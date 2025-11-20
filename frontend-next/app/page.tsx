@@ -40,8 +40,12 @@ export default function Home() {
       <div className="max-w-6xl mx-auto px-6 py-16">
         {/* Logo Section */}
         <div className="text-center mb-16 animate-fade-in-down">
-          <div className="inline-flex items-center justify-center w-28 h-28 bg-[#ed4c4c] rounded-3xl text-white text-5xl font-bold mb-6 shadow-2xl shadow-[#ed4c4c]/30">
-            馨
+          <div className="flex items-center justify-center mb-8">
+            <img 
+              src="/heysalad_white_logo.svg" 
+              alt="HeySalad" 
+              className="h-20 w-auto"
+            />
           </div>
           <h1 className="text-5xl font-bold mb-3">Xin Yi WMS</h1>
           <p className="text-xl text-gray-400">Intelligent Food Warehouse Management</p>

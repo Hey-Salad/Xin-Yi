@@ -31,42 +31,65 @@ class DocumentGenerator:
         self._setup_custom_styles()
 
     def _setup_custom_styles(self):
-        """Setup custom paragraph styles"""
-        # Title style
+        """Setup Wise-style paragraph styles - clean, minimal, professional"""
+        # Title style - Wise style, left-aligned, bold
         self.styles.add(ParagraphStyle(
             name='CustomTitle',
             parent=self.styles['Heading1'],
             fontSize=24,
-            textColor=colors.HexColor('#1a1a1a'),
-            spaceAfter=30,
-            alignment=TA_CENTER,
+            textColor=colors.black,
+            spaceAfter=16,
+            spaceBefore=0,
+            alignment=TA_LEFT,
             fontName='Helvetica-Bold'
         ))
 
-        # Header style
+        # Header style - Wise style, clean
         self.styles.add(ParagraphStyle(
             name='CustomHeader',
             parent=self.styles['Heading2'],
-            fontSize=14,
-            textColor=colors.HexColor('#2c3e50'),
-            spaceAfter=12,
+            fontSize=11,
+            textColor=colors.black,
+            spaceAfter=8,
+            spaceBefore=12,
             fontName='Helvetica-Bold'
         ))
 
-        # Info style
+        # Info style - Wise style, readable
         self.styles.add(ParagraphStyle(
             name='InfoText',
             parent=self.styles['Normal'],
-            fontSize=10,
-            textColor=colors.HexColor('#333333'),
+            fontSize=9,
+            textColor=colors.black,
+            leading=12,
         ))
 
-        # Small text
+        # Small text - Wise style, subtle
         self.styles.add(ParagraphStyle(
             name='SmallText',
             parent=self.styles['Normal'],
             fontSize=8,
             textColor=colors.HexColor('#666666'),
+            leading=10,
+        ))
+
+        # Company info style
+        self.styles.add(ParagraphStyle(
+            name='CompanyInfo',
+            parent=self.styles['Normal'],
+            fontSize=8,
+            textColor=colors.HexColor('#333333'),
+            alignment=TA_CENTER,
+            leading=10,
+        ))
+        
+        # Date/metadata style - Wise style
+        self.styles.add(ParagraphStyle(
+            name='MetaText',
+            parent=self.styles['Normal'],
+            fontSize=9,
+            textColor=colors.HexColor('#666666'),
+            leading=12,
         ))
 
     def _generate_qr_code(self, data: str, size: int = 100) -> Image:
@@ -104,49 +127,93 @@ class DocumentGenerator:
             return None
 
     def _create_header(self) -> List:
-        """Create document header with company info"""
+        """Create Wise-style header - logo LEFT-aligned at top, company info below"""
         elements = []
-
-        # Company name
-        elements.append(Paragraph(
-            f"<b>{self.company_name}</b>",
-            self.styles['CustomTitle']
-        ))
-
-        # Company details
-        if self.company_info:
-            info_text = "<br/>".join([
-                self.company_info.get('address', ''),
-                self.company_info.get('phone', ''),
-                self.company_info.get('email', ''),
-            ])
-            if info_text.strip():
-                elements.append(Paragraph(info_text, self.styles['SmallText']))
-
-        elements.append(Spacer(1, 0.3*inch))
+        
+        # Logo FIRST - LEFT-aligned at top
+        try:
+            import os
+            logo_path = os.path.join(os.path.dirname(__file__), 'heysalad_logo_black.png')
+            if os.path.exists(logo_path):
+                logo = Image(logo_path, width=1.8*inch, height=0.54*inch)
+                # Use table with LEFT alignment and no padding
+                logo_table = Table([[logo]], colWidths=[1.8*inch])
+                logo_table.setStyle(TableStyle([
+                    ('ALIGN', (0, 0), (0, 0), 'LEFT'),
+                    ('VALIGN', (0, 0), (0, 0), 'TOP'),
+                    ('LEFTPADDING', (0, 0), (0, 0), 0),
+                    ('RIGHTPADDING', (0, 0), (0, 0), 0),
+                    ('TOPPADDING', (0, 0), (0, 0), 0),
+                    ('BOTTOMPADDING', (0, 0), (0, 0), 0),
+                ]))
+                elements.append(logo_table)
+                elements.append(Spacer(1, 0.15*inch))
+        except Exception as e:
+            pass
+        
+        # Company name BELOW logo - bold, LEFT-aligned
+        company_name_style = ParagraphStyle(
+            'CompanyName',
+            parent=self.styles['Normal'],
+            fontSize=9,
+            textColor=colors.black,
+            alignment=TA_LEFT,
+            fontName='Helvetica-Bold',
+            spaceAfter=4,
+        )
+        
+        company_name = Paragraph("<b>HeySalad Payments Ltd.</b>", company_name_style)
+        elements.append(company_name)
+        
+        # Company address details - Wise style, LEFT-aligned
+        address_style = ParagraphStyle(
+            'WiseAddress',
+            parent=self.styles['Normal'],
+            fontSize=8,
+            textColor=colors.HexColor('#333333'),
+            alignment=TA_LEFT,
+            leading=11,
+        )
+        
+        address_details = Paragraph(
+            "3rd Floor, 86-90 Paul Street<br/>"
+            "London<br/>"
+            "EC2A 4NE<br/>"
+            "United Kingdom",
+            address_style
+        )
+        elements.append(address_details)
+        elements.append(Spacer(1, 0.25*inch))
 
         return elements
 
     def _create_footer(self, canvas_obj, doc):
-        """Create document footer"""
+        """Create Wise-style footer - minimal and clean with correct page count"""
         canvas_obj.saveState()
 
-        # Page number
+        # Document hash - left side, small and subtle
+        import hashlib
         page_num = canvas_obj.getPageNumber()
-        text = f"Page {page_num}"
-        canvas_obj.setFont('Helvetica', 8)
-        canvas_obj.drawRightString(doc.width + doc.leftMargin, 0.5*inch, text)
-
-        # Timestamp
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        canvas_obj.drawString(doc.leftMargin, 0.5*inch, f"Generated: {timestamp}")
-
-        # Branding
+        hash_input = f"{timestamp}-{page_num}-{self.company_name}".encode()
+        doc_hash = hashlib.sha256(hash_input).hexdigest()[:24].lower()
+        
+        canvas_obj.setFont('Helvetica', 7)
         canvas_obj.setFillColor(colors.HexColor('#999999'))
-        canvas_obj.drawCentredString(
-            doc.width/2 + doc.leftMargin,
-            0.3*inch,
-            "Powered by Xin Yi WMS - HeySalad Platform"
+        canvas_obj.drawString(
+            doc.leftMargin,
+            0.4*inch,
+            f"{doc_hash}"
+        )
+
+        # Page number - right side, Wise style with actual page count
+        canvas_obj.setFont('Helvetica', 8)
+        canvas_obj.setFillColor(colors.HexColor('#666666'))
+        # Use the actual page number without total for now (will show just page number)
+        canvas_obj.drawRightString(
+            doc.width + doc.leftMargin,
+            0.4*inch,
+            f"{page_num}"
         )
 
         canvas_obj.restoreState()

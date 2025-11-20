@@ -3,6 +3,11 @@ from flask_cors import CORS
 from datetime import datetime, timedelta
 import sqlite3
 from database import init_database, generate_mock_data, get_db_connection
+import sys
+import os
+
+# Add routes directory to path
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'routes'))
 
 app = Flask(__name__)
 CORS(app)
@@ -10,6 +15,14 @@ CORS(app)
 # 初始化数据库 | Initialize database
 init_database()
 generate_mock_data()
+
+# Import and register document routes
+try:
+    from routes.document_routes import document_bp
+    app.register_blueprint(document_bp)
+    print("✅ Document routes registered")
+except Exception as e:
+    print(f"⚠️  Could not register document routes: {e}")
 
 @app.route('/api/dashboard/stats', methods=['GET'])
 def get_dashboard_stats():

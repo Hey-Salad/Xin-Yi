@@ -11,6 +11,9 @@ const figtree = Figtree({
 export const metadata: Metadata = {
   title: "Xin Yi WMS® | Intelligent Food Warehouse Management",
   description: "AI-powered warehouse management system designed for fresh food logistics with FEFO intelligence",
+  icons: {
+    icon: '/HeySalad_Launchericon.jpg',
+  },
 };
 
 export default function RootLayout({

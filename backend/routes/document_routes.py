@@ -4,7 +4,7 @@ Generate and download various warehouse documents
 """
 
 from flask import Blueprint, jsonify, request, send_file
-from datetime import datetime
+from datetime import datetime, timedelta
 from io import BytesIO
 import sys
 import os
@@ -43,20 +43,43 @@ def handle_options(path):
 
 # ============= RECEIVING DOCUMENTS =============
 
-@document_bp.route('/receiving/po-receipt', methods=['POST'])
+@document_bp.route('/receiving/po-receipt', methods=['POST', 'GET'])
 def generate_po_receipt():
     """Generate Purchase Order Receipt Document"""
     try:
-        data = request.json
+        if request.method == 'GET':
+            # Generate sample data from Supabase
+            response = supabase.table('materials').select('*').limit(5).execute()
+            items = []
+            for material in response.data:
+                items.append({
+                    'sku': material['sku'],
+                    'name': material['name'],
+                    'ordered_qty': 100,
+                    'received_qty': 100,
+                    'lot_number': f'LOT-{datetime.now().strftime("%Y%m%d")}',
+                    'expiration_date': (datetime.now().replace(day=1) + timedelta(days=90)).strftime('%Y-%m-%d'),
+                    'condition': 'Good'
+                })
+            
+            data = {
+                'po_number': f'PO-{datetime.now().strftime("%Y%m%d")}',
+                'vendor': 'Sample Vendor',
+                'received_date': datetime.now(),
+                'receiver': 'System',
+                'items': items,
+                'company_name': 'HeySalad - Xin Yi WMS'
+            }
+        else:
+            data = request.json
+            # Validate required fields
+            required = ['po_number', 'vendor', 'items']
+            if not all(field in data for field in required):
+                return jsonify({'error': 'Missing required fields'}), 400
 
-        # Validate required fields
-        required = ['po_number', 'vendor', 'items']
-        if not all(field in data for field in required):
-            return jsonify({'error': 'Missing required fields'}), 400
-
-        # Set defaults
-        if 'received_date' not in data:
-            data['received_date'] = datetime.now()
+            # Set defaults
+            if 'received_date' not in data:
+                data['received_date'] = datetime.now()
 
         # Generate PDF
         doc_generator = POReceiptDocument(
@@ -77,11 +100,39 @@ def generate_po_receipt():
         return jsonify({'error': str(e)}), 500
 
 
-@document_bp.route('/receiving/receiving-report', methods=['POST'])
+@document_bp.route('/receiving/receiving-report', methods=['POST', 'GET'])
 def generate_receiving_report():
     """Generate Receiving Report"""
     try:
-        data = request.json
+        if request.method == 'GET':
+            # Generate sample data
+            response = supabase.table('materials').select('*').limit(10).execute()
+            receipts = []
+            for i, material in enumerate(response.data):
+                receipts.append({
+                    'po_number': f'PO-{i+1:04d}',
+                    'vendor': f'Vendor {i+1}',
+                    'items_count': 1,
+                    'total_quantity': material['quantity'],
+                    'received_time': datetime.now()
+                })
+            
+            data = {
+                'report_id': f'RR-{datetime.now().strftime("%Y%m%d")}',
+                'report_date': datetime.now(),
+                'period': 'Daily',
+                'start_date': datetime.now().replace(day=1),
+                'end_date': datetime.now(),
+                'receipts': receipts,
+                'summary': {
+                    'total_receipts': len(receipts),
+                    'total_items': len(receipts),
+                    'total_quantity': sum(r['total_quantity'] for r in receipts)
+                },
+                'company_name': 'HeySalad - Xin Yi WMS'
+            }
+        else:
+            data = request.json
 
         doc_generator = ReceivingReportDocument(
             company_name=data.get('company_name', 'Xin Yi WMS')
@@ -99,11 +150,34 @@ def generate_receiving_report():
         return jsonify({'error': str(e)}), 500
 
 
-@document_bp.route('/receiving/putaway-report', methods=['POST'])
+@document_bp.route('/receiving/putaway-report', methods=['POST', 'GET'])
 def generate_putaway_report():
     """Generate Putaway Report"""
     try:
-        data = request.json
+        if request.method == 'GET':
+            # Generate sample data
+            response = supabase.table('materials').select('*').limit(8).execute()
+            items = []
+            for material in response.data:
+                items.append({
+                    'sku': material['sku'],
+                    'name': material['name'],
+                    'lot_number': f'LOT-{datetime.now().strftime("%Y%m%d")}',
+                    'quantity': material['quantity'],
+                    'from_location': 'Receiving',
+                    'to_location': material['location'],
+                    'status': 'Completed'
+                })
+            
+            data = {
+                'report_id': f'PR-{datetime.now().strftime("%Y%m%d")}',
+                'date': datetime.now(),
+                'operator': 'System',
+                'items': items,
+                'company_name': 'HeySalad - Xin Yi WMS'
+            }
+        else:
+            data = request.json
 
         doc_generator = PutawayReportDocument(
             company_name=data.get('company_name', 'Xin Yi WMS')
@@ -229,11 +303,48 @@ def generate_stock_status():
         return jsonify({'error': str(e)}), 500
 
 
-@document_bp.route('/inventory/cycle-count', methods=['POST'])
+@document_bp.route('/inventory/cycle-count', methods=['POST', 'GET'])
 def generate_cycle_count():
     """Generate Cycle Count Report"""
     try:
-        data = request.json
+        if request.method == 'GET':
+            # Generate sample data
+            response = supabase.table('materials').select('*').limit(10).execute()
+            items = []
+            variances = 0
+            for material in response.data:
+                system_qty = material['quantity']
+                # Simulate some variances
+                counted_qty = system_qty + (1 if len(items) % 3 == 0 else 0)
+                variance = counted_qty - system_qty
+                if variance != 0:
+                    variances += 1
+                
+                items.append({
+                    'sku': material['sku'],
+                    'name': material['name'],
+                    'location': material['location'],
+                    'system_qty': system_qty,
+                    'counted_qty': counted_qty,
+                    'variance': variance
+                })
+            
+            accuracy_rate = ((len(items) - variances) / len(items) * 100) if items else 0
+            
+            data = {
+                'count_id': f'CC-{datetime.now().strftime("%Y%m%d")}',
+                'count_date': datetime.now(),
+                'counter': 'System',
+                'items': items,
+                'summary': {
+                    'items_counted': len(items),
+                    'variances_found': variances,
+                    'accuracy_rate': accuracy_rate
+                },
+                'company_name': 'HeySalad - Xin Yi WMS'
+            }
+        else:
+            data = request.json
 
         # Calculate variances and accuracy
         items = data.get('items', [])
@@ -265,11 +376,32 @@ def generate_cycle_count():
 
 # ============= FULFILLMENT & SHIPPING DOCUMENTS =============
 
-@document_bp.route('/fulfillment/pick-list', methods=['POST'])
+@document_bp.route('/fulfillment/pick-list', methods=['POST', 'GET'])
 def generate_pick_list():
     """Generate Pick List"""
     try:
-        data = request.json
+        if request.method == 'GET':
+            # Generate sample data
+            response = supabase.table('materials').select('*').limit(6).execute()
+            items = []
+            for material in response.data:
+                items.append({
+                    'sku': material['sku'],
+                    'name': material['name'],
+                    'quantity': min(material['quantity'], 10),
+                    'location': material['location']
+                })
+            
+            data = {
+                'order_number': f'ORD-{datetime.now().strftime("%Y%m%d-%H%M")}',
+                'pick_date': datetime.now(),
+                'picker': 'System',
+                'priority': 'Normal',
+                'items': items,
+                'company_name': 'HeySalad - Xin Yi WMS'
+            }
+        else:
+            data = request.json
 
         doc_generator = PickListDocument(
             company_name=data.get('company_name', 'Xin Yi WMS')
@@ -287,11 +419,39 @@ def generate_pick_list():
         return jsonify({'error': str(e)}), 500
 
 
-@document_bp.route('/fulfillment/packing-slip', methods=['POST'])
+@document_bp.route('/fulfillment/packing-slip', methods=['POST', 'GET'])
 def generate_packing_slip():
     """Generate Packing Slip"""
     try:
-        data = request.json
+        if request.method == 'GET':
+            # Generate sample data
+            response = supabase.table('materials').select('*').limit(5).execute()
+            items = []
+            for material in response.data:
+                items.append({
+                    'sku': material['sku'],
+                    'name': material['name'],
+                    'quantity': min(material['quantity'], 5)
+                })
+            
+            data = {
+                'order_number': f'ORD-{datetime.now().strftime("%Y%m%d-%H%M")}',
+                'packing_date': datetime.now(),
+                'ship_to': {
+                    'name': 'Sample Customer',
+                    'address_line1': '123 Main Street',
+                    'city': 'Sample City',
+                    'state': 'CA',
+                    'postal_code': '12345',
+                    'country': 'USA'
+                },
+                'items': items,
+                'tracking_number': f'TRK-{datetime.now().strftime("%Y%m%d%H%M")}',
+                'carrier': 'Express Delivery',
+                'company_name': 'HeySalad - Xin Yi WMS'
+            }
+        else:
+            data = request.json
 
         doc_generator = PackingSlipDocument(
             company_name=data.get('company_name', 'Xin Yi WMS')
@@ -309,11 +469,38 @@ def generate_packing_slip():
         return jsonify({'error': str(e)}), 500
 
 
-@document_bp.route('/fulfillment/shipping-label', methods=['POST'])
+@document_bp.route('/fulfillment/shipping-label', methods=['POST', 'GET'])
 def generate_shipping_label():
     """Generate Shipping Label"""
     try:
-        data = request.json
+        if request.method == 'GET':
+            # Generate sample data
+            data = {
+                'tracking_number': f'TRK-{datetime.now().strftime("%Y%m%d%H%M%S")}',
+                'carrier': 'Express Delivery',
+                'service_level': 'Next Day',
+                'ship_date': datetime.now(),
+                'from_address': {
+                    'name': 'HeySalad Warehouse',
+                    'address_line1': '123 Warehouse Road',
+                    'city': 'Sample City',
+                    'state': 'CA',
+                    'postal_code': '12345'
+                },
+                'to_address': {
+                    'name': 'Sample Customer',
+                    'address_line1': '456 Customer Avenue',
+                    'city': 'Customer City',
+                    'state': 'NY',
+                    'postal_code': '67890',
+                    'country': 'USA'
+                },
+                'weight': 5.5,
+                'dimensions': '12x10x8 inches',
+                'company_name': 'HeySalad - Xin Yi WMS'
+            }
+        else:
+            data = request.json
 
         doc_generator = ShippingLabelDocument(
             company_name=data.get('company_name', 'Xin Yi WMS')
@@ -331,11 +518,44 @@ def generate_shipping_label():
         return jsonify({'error': str(e)}), 500
 
 
-@document_bp.route('/shipping/bill-of-lading', methods=['POST'])
+@document_bp.route('/shipping/bill-of-lading', methods=['POST', 'GET'])
 def generate_bill_of_lading():
     """Generate Bill of Lading"""
     try:
-        data = request.json
+        if request.method == 'GET':
+            # Generate sample data
+            response = supabase.table('materials').select('*').limit(3).execute()
+            items = []
+            for material in response.data:
+                items.append({
+                    'description': material['name'],
+                    'quantity': min(material['quantity'], 20),
+                    'weight': min(material["quantity"], 20) * 0.5
+                })
+            
+            data = {
+                'bol_number': f'BOL-{datetime.now().strftime("%Y%m%d")}',
+                'shipment_date': datetime.now(),
+                'shipper': {
+                    'name': 'HeySalad Warehouse',
+                    'address_line1': '123 Warehouse Road',
+                    'city': 'Sample City',
+                    'state': 'CA',
+                    'postal_code': '12345'
+                },
+                'consignee': {
+                    'name': 'Sample Customer',
+                    'address_line1': '456 Customer Avenue',
+                    'city': 'Customer City',
+                    'state': 'NY',
+                    'postal_code': '67890'
+                },
+                'carrier': 'Express Freight',
+                'items': items,
+                'company_name': 'HeySalad - Xin Yi WMS'
+            }
+        else:
+            data = request.json
 
         doc_generator = BillOfLadingDocument(
             company_name=data.get('company_name', 'Xin Yi WMS')
