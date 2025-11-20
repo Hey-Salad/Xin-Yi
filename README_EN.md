@@ -1,6 +1,10 @@
-# Warehouse Management System
+<img src="https://raw.githubusercontent.com/Hey-Salad/.github/refs/heads/main/HeySalad%20Logo%20%2B%20Tagline%20Black.svg" alt="HeySalad Logo" width="400"/>
 
-An intelligent hardware warehouse management dashboard based on Python Flask + SQLite.
+# Xin Yi WMS® - Intelligent Food Warehouse Management 🥗
+
+> **AI-powered warehouse management system designed for fresh food logistics with FEFO intelligence**
+
+An intelligent hardware warehouse management dashboard based on Python Flask + Supabase PostgreSQL.
 
 ## Features
 
