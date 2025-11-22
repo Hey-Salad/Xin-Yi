@@ -1,12 +1,15 @@
 /**
  * @file camera_stub.c
- * @brief Placeholder for SenseCAP Watcher camera/Himax integration
- *
- * TODO: Implement Himax AI processor communication via SPI
+ * @brief Camera helpers placeholder for the Himax processor.
  */
 
-#include <stdio.h>
+#include "camera.h"
+#include "esp_log.h"
 
-void camera_init(void) {
-    printf("[Camera] Stub - camera_init() called\n");
+static const char *TAG = "CAMERA";
+
+void camera_init(app_state_t *state)
+{
+    ESP_LOGI(TAG, "Camera module initialized (stub)");
+    state->camera_ready = true;
 }

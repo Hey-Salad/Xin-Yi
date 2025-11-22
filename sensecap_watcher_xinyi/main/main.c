@@ -40,6 +40,13 @@
 #include "lwip/sys.h"
 
 #include "include/config.h"
+#include "include/app_state.h"
+#include "include/wifi_manager.h"
+#include "include/http_server.h"
+
+#include "display.h"
+#include "camera.h"
+#include "xinyi_client.h"
 
 // =============================================================================
 // LOGGING TAG
@@ -49,23 +56,7 @@ static const char *TAG = "XINYI_MAIN";
 // =============================================================================
 // GLOBAL STATE
 // =============================================================================
-typedef struct {
-    bool wifi_connected;
-    bool backend_connected;
-    bool camera_ready;
-    bool display_ready;
-    bool streaming_enabled;
-    uint32_t uptime_seconds;
-    uint32_t frames_sent;
-    float battery_voltage;
-    char device_id[37];  // UUID
-    char wifi_ssid[32];
-    char wifi_password[64];
-    char backend_url[128];
-    device_role_t role;
-} app_state_t;
-
-static app_state_t g_app_state = {
+app_state_t g_app_state = {
     .wifi_connected = false,
     .backend_connected = false,
     .camera_ready = false,
@@ -234,68 +225,36 @@ static void generate_device_id(void)
 
 static void init_wifi(void)
 {
-    ESP_LOGI(TAG, "Initializing WiFi... (stub)");
-    // TODO: Implement full WiFi manager in wifi_manager.c
-    // Should handle:
-    // - STA mode connection with retry
-    // - AP mode fallback if no credentials
-    // - mDNS service advertisement
-    // - Network event handling
+    ESP_LOGI(TAG, "Initializing WiFi manager...");
+    wifi_manager_init();
 }
 
 static void init_display(void)
 {
-    ESP_LOGI(TAG, "Initializing 412x412 display... (stub)");
-    g_app_state.display_ready = false;
-    // TODO: Implement in components/display/
-    // Should handle:
-    // - QSPI LCD initialization
-    // - Touch screen calibration
-    // - UI rendering framework
-    // - Status display
+    ESP_LOGI(TAG, "Initializing display module...");
+    display_init(&g_app_state);
 }
 
 static void init_camera(void)
 {
-    ESP_LOGI(TAG, "Initializing Himax camera... (stub)");
-    g_app_state.camera_ready = false;
-    // TODO: Implement in components/camera/
-    // Should handle:
-    // - Himax AI processor initialization
-    // - Camera configuration
-    // - Frame capture
-    // - JPEG encoding
+    ESP_LOGI(TAG, "Initializing camera module...");
+    camera_init(&g_app_state);
 }
 
 static void init_http_server(void)
 {
-    ESP_LOGI(TAG, "Starting HTTP server... (stub)");
-    // TODO: Implement in http_server.c
-    // Should provide:
-    // - GET / - Web dashboard
-    // - GET /api/status - Device status JSON
-    // - POST /api/settings - Update configuration
-    // - WS /ws - WebSocket for camera streaming
-    // - POST /api/photo - Capture photo
+    ESP_LOGI(TAG, "Starting HTTP dashboard...");
+    http_server_init(&g_app_state);
 }
 
 static void init_bluetooth(void)
 {
-    ESP_LOGI(TAG, "Initializing Bluetooth... (stub)");
-    // TODO: Implement BLE UART service
-    // Compatible with heysalad_xiao_og BLE protocol
+    ESP_LOGI(TAG, "Bluetooth feature not yet implemented");
 }
 
 static void display_status_screen(void)
 {
-    // TODO: Render status on 412x412 display
-    // Show:
-    // - XinYi logo
-    // - WiFi status
-    // - Backend connection status
-    // - Device role
-    // - IP address
-    // - Battery level
+    display_draw_status(&g_app_state);
 }
 
 // =============================================================================
@@ -356,6 +315,7 @@ void app_main(void)
 
     // Initialize services
     init_http_server();
+    xinyi_client_init(&g_app_state);
 
     if (BLE_ENABLED) {
         init_bluetooth();

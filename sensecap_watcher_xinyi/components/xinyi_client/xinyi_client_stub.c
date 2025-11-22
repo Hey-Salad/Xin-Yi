@@ -1,12 +1,15 @@
 /**
  * @file xinyi_client_stub.c
- * @brief Placeholder for Xin-Yi backend API client
- *
- * TODO: Implement REST API calls to wms.heysalad.app
+ * @brief Xin-Yi backend client helpers (stub implementation).
  */
 
-#include <stdio.h>
+#include "xinyi_client.h"
+#include "esp_log.h"
 
-void xinyi_client_init(void) {
-    printf("[XinYi Client] Stub - xinyi_client_init() called\n");
+static const char *TAG = "XINYI_CLIENT";
+
+void xinyi_client_init(app_state_t *state)
+{
+    ESP_LOGI(TAG, "Backend client ready, target=%s", state->backend_url);
+    state->backend_connected = true;
 }

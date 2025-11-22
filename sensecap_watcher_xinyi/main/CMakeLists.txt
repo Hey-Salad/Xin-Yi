@@ -25,4 +25,5 @@ idf_component_register(
         display
         network
         xinyi_client
+        shared
 )
